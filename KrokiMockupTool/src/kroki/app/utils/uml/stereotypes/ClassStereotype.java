@@ -20,10 +20,14 @@ public class ClassStereotype {
 	 */
 	public static final String STEREOTYPE_STANDARD_PANEL_NAME="StandardPanel";
 	
+	public static final String STEREOTYPE_PARAMETER_PANEL_NAME="ParameterPanel";
+	
 	/**
 	 * Name of the ParentChild stereotype that can be applied to a UML Class element.
 	 */
 	public static final String STEREOTYPE_PARENT_CHILD_NAME="ParentChild";
+	
+	public static final String STEREOTYPE_MANY_TO_MANY_NAME="ManyToMany";
     
 	/**
 	 * Checks if StandardPanel stereotype is applied for the received UML Class element.
@@ -220,6 +224,15 @@ public class ClassStereotype {
 	 */
 	public static boolean isParenChildStereotypeApplied(org.eclipse.uml2.uml.Class object){
 		Stereotype stereotypeObject=object.getAppliedStereotype(StereotypeUtil.EUIS_DSL_PROFILE+STEREOTYPE_PARENT_CHILD_NAME);
+		
+		if(stereotypeObject!=null)
+			return true;
+		else
+			return false;
+	}
+	
+	public static boolean isManyToManyStereotypeApplied(org.eclipse.uml2.uml.Class object){
+		Stereotype stereotypeObject=object.getAppliedStereotype(StereotypeUtil.EUIS_DSL_PROFILE+STEREOTYPE_MANY_TO_MANY_NAME);
 		
 		if(stereotypeObject!=null)
 			return true;

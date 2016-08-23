@@ -92,10 +92,45 @@
 <#-- OPERATIONS DIV -->
 <#-- <#if hasOperationPanel> -->
 <div class="operationsDiv">
-    <button class="buttons-blue operationButton" data-operation="default_print" data-confirmLink="printForm" data-confirmText="Select columns no print.">
-        <img class="operationIcon" src="/files/images/icons-white/print.png">
-        <span>Print</span>
-    </button>
+    <#if isReportPanel>
+		<table>
+		<tr>
+			<td>
+			Report sending
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<input type="radio" name="printToLocation" value="screen">Screen</input>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<input type="radio" name="printToLocation" value="printer">Printer</input>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				No. of copies: <input type="text" class="numberOfCopies" style="width:30px;"/>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<!-- button class="buttons-blue operationButton" data-operation="default_print" data-confirmLink="printForm" data-confirmText="Select columns no print." -->
+				<button class="buttons-blue printReportButton" >
+				<img class="operationIcon" src="/files/images/icons-white/print.png">
+				<span>Print</span>
+			</button>
+			</td>
+		</tr>
+		</table>
+	<#else>
+		<button class="buttons-blue operationButton" data-operation="default_print" data-confirmLink="printForm" data-confirmText="Select columns no print.">
+			<img class="operationIcon" src="/files/images/icons-white/print.png">
+			<span>Print</span>
+		</button>
+	</#if>
+	
 <!-- Ovo sam izbacio jer vise ne treba provera posto sada u svakom slucaju treba operationsDiv na svakoj formi zbog printa -->
 <#if panelOperationGroups??>
 <#if panelOperationGroups[panel.name]?has_content>

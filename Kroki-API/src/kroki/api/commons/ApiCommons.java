@@ -14,10 +14,12 @@ import kroki.profil.operation.Report;
 import kroki.profil.operation.Transaction;
 import kroki.profil.operation.VisibleOperation;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.utils.ElementsGroupUtil;
 import kroki.profil.utils.HierarchyUtil;
+import kroki.profil.utils.ManyToManyUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.UIPropertyUtil;
 
@@ -125,19 +127,34 @@ public class ApiCommons {
 		hierarchy.setTargetPanel(targetPanel);
 
 
-		if (!(targetPanel instanceof ParentChild)){
-			List<Hierarchy> possibleParents = ParentChildUtil.possibleParents((ParentChild)visibleClass, hierarchy, hierarchy.getLevel() - 1);
-			if (possibleParents != null  && possibleParents.size() >= 1){ 
-				hierarchy.setHierarchyParent(possibleParents.get(0)); //set the first one by default, users can change it in mockup editor
-				hierarchy.setLevel(possibleParents.get(0).getLevel() + 1);
-				List<VisibleAssociationEnd> possibleEnds = ParentChildUtil.possibleAssociationEnds((ParentChild)visibleClass, hierarchy);
-				if (possibleEnds != null  && possibleEnds.size() >= 1)
-					hierarchy.setViaAssociationEnd(possibleEnds.get(0));
+		if (!(targetPanel instanceof ParentChild) && !(targetPanel instanceof ManyToMany)){
+			if(hierarchy.umlClass() instanceof ParentChild){
+				List<Hierarchy> possibleParents = ParentChildUtil.possibleParents((ParentChild)visibleClass, hierarchy, hierarchy.getLevel() - 1);
+				if (possibleParents != null  && possibleParents.size() >= 1){ 
+					hierarchy.setHierarchyParent(possibleParents.get(0)); //set the first one by default, users can change it in mockup editor
+					hierarchy.setLevel(possibleParents.get(0).getLevel() + 1);
+					List<VisibleAssociationEnd> possibleEnds = ParentChildUtil.possibleAssociationEnds((ParentChild)visibleClass, hierarchy);
+					if (possibleEnds != null  && possibleEnds.size() >= 1)
+						hierarchy.setViaAssociationEnd(possibleEnds.get(0));
+				}
+			}else if(hierarchy.umlClass() instanceof ManyToMany){
+				List<Hierarchy> possibleParents = ManyToManyUtil.possibleParents((ManyToMany)visibleClass, hierarchy, hierarchy.getLevel() - 1);
+				if (possibleParents != null  && possibleParents.size() >= 1){ 
+					hierarchy.setHierarchyParent(possibleParents.get(0)); //set the first one by default, users can change it in mockup editor
+					hierarchy.setLevel(possibleParents.get(0).getLevel() + 1);
+					List<VisibleAssociationEnd> possibleEnds = ManyToManyUtil.possibleAssociationEnds((ManyToMany)visibleClass, hierarchy);
+					if (possibleEnds != null  && possibleEnds.size() >= 1)
+						hierarchy.setViaAssociationEnd(possibleEnds.get(0));
+				}
 			}
 		}
 
-		
-		ElementsGroup gr = (ElementsGroup) visibleClass.getVisibleElementList().get(Util.PARENTCHILD_PANEL_PROPERTIES);
+		ElementsGroup gr = null;
+		if(hierarchy.umlClass() instanceof ParentChild){
+			gr = (ElementsGroup) visibleClass.getVisibleElementList().get(Util.PARENTCHILD_PANEL_PROPERTIES);
+		}else if(hierarchy.umlClass() instanceof ManyToMany){
+			gr = (ElementsGroup) visibleClass.getVisibleElementList().get(Util.MANY_TO_MANY_PANEL_PROPERTIES);
+		}
 		ElementsGroupUtil.addVisibleElement(gr, hierarchy);
 
 		hierarchy.setParentGroup(gr);

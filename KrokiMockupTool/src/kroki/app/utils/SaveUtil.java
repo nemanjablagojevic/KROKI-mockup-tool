@@ -169,7 +169,9 @@ public class SaveUtil {
 		xstream.alias("TextFieldPainter", kroki.mockup.view.painters.components.TextFieldPainter.class);
 		xstream.alias("TitledContainerPainter", kroki.mockup.view.painters.components.TitledContainerPainter.class);
 		xstream.alias("StandardPanel", kroki.profil.panel.StandardPanel.class);
+		xstream.alias("ParameterPanel", kroki.profil.panel.ParameterPanel.class);
 		xstream.alias("ParentChildPanel", kroki.profil.panel.container.ParentChild.class);
+		xstream.alias("ManyToManyPanel", kroki.profil.panel.container.ManyToMany.class);
 
 	}
 

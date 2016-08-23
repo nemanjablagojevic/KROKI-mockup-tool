@@ -6,10 +6,10 @@
         drop constraint FK636FFB4CF4F3CF9D;
 
     alter table Adapt_ResourceHierarchy 
-        drop constraint FK1E8CB1AA1AEA0D6D;
+        drop constraint FK1E8CB1AAB90B0743;
 
     alter table Adapt_ResourceHierarchy 
-        drop constraint FK1E8CB1AAB90B0743;
+        drop constraint FK1E8CB1AA1AEA0D6D;
 
     alter table Adapt_RolePermission 
         drop constraint FK93C0B5E2386ED6BD;
@@ -119,13 +119,13 @@
         references Adapt_Operation;
 
     alter table Adapt_ResourceHierarchy 
-        add constraint FK1E8CB1AA1AEA0D6D 
-        foreign key (resource) 
+        add constraint FK1E8CB1AAB90B0743 
+        foreign key (resource2) 
         references Adapt_Resource;
 
     alter table Adapt_ResourceHierarchy 
-        add constraint FK1E8CB1AAB90B0743 
-        foreign key (resource2) 
+        add constraint FK1E8CB1AA1AEA0D6D 
+        foreign key (resource) 
         references Adapt_Resource;
 
     alter table Adapt_RolePermission 

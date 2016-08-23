@@ -22,11 +22,15 @@ import kroki.intl.Intl;
 import kroki.profil.VisibleElement;
 import kroki.profil.association.Hierarchy;
 import kroki.profil.association.VisibleAssociationEnd;
+import kroki.profil.panel.ContainerPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.utils.HierarchyUtil;
+import kroki.profil.utils.ManyToManyUtil;
 import kroki.profil.utils.ParentChildUtil;
+import kroki.uml_core_basic.UmlClass;
 import kroki.uml_core_basic.UmlProperty;
 import net.miginfocom.swing.MigLayout;
 
@@ -129,17 +133,22 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 
 		Hierarchy hierarchy = (Hierarchy) visibleElement;
 
-
+		
 		//NEW:
-		ParentChild panel = (ParentChild) ((UmlProperty) visibleElement).umlClass();
+		UmlClass panel = ((UmlProperty) visibleElement).umlClass();
 
 
 
 		boolean enableLevels = false;
 		if (hierarchy.getTargetPanel()!=null && hierarchy.getLevel() != 1){
-			if ((hierarchy.getTargetPanel() instanceof ParentChild && hierarchy.getAppliedToPanel() != null) ||
+			if (((hierarchy.getTargetPanel() instanceof ParentChild || hierarchy.getTargetPanel() instanceof ManyToMany) && hierarchy.getAppliedToPanel() != null) ||
 					hierarchy.getTargetPanel() instanceof StandardPanel){
-				Vector<Integer> possibleLevels = ParentChildUtil.possibleLevels(panel, hierarchy);
+				Vector<Integer> possibleLevels = null;
+				if(panel instanceof ParentChild){
+					possibleLevels = ParentChildUtil.possibleLevels((ParentChild)panel, hierarchy);
+				}else if (panel instanceof ManyToMany){
+					possibleLevels = ManyToManyUtil.possibleLevels((ManyToMany)panel, hierarchy);
+				}
 				if (possibleLevels != null && possibleLevels.size() > 0){
 					levelTf.setVisible(false);
 					cbLevels.setVisible(true);
@@ -174,7 +183,12 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 			hierarchyParentBtn.setEnabled(true);
 
 		//disable or enable via association end
-		List<VisibleAssociationEnd> viaAssociationEnd = ParentChildUtil.possibleAssociationEnds(panel, hierarchy);
+		List<VisibleAssociationEnd> viaAssociationEnd = null;
+		if(panel instanceof ParentChild){
+			viaAssociationEnd = ParentChildUtil.possibleAssociationEnds((ParentChild)panel, hierarchy);
+		}else if(hierarchy.getTargetPanel() instanceof ManyToMany){
+			viaAssociationEnd = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
+		}
 
 		String viaAssociationEndValue = "";
 		if (hierarchy.getViaAssociationEnd() != null) 
@@ -188,7 +202,7 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 
 
 
-		if (hierarchy.getTargetPanel() != null && hierarchy.getTargetPanel() instanceof ParentChild){
+		if (hierarchy.getTargetPanel() != null && (hierarchy.getTargetPanel() instanceof ParentChild || hierarchy.getTargetPanel() instanceof ManyToMany)){
 			appliedToPanelLb.setVisible(true);
 			appliedToPanelTf.setVisible(true);
 			appliedToPanelBtn.setVisible(true);
@@ -268,7 +282,7 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 				if (event.getStateChange() == ItemEvent.SELECTED){
 
 					Hierarchy hierarchy = (Hierarchy) visibleElement;
-					ParentChild panel = (ParentChild) ((UmlProperty) visibleElement).umlClass();
+					UmlClass panel = ((UmlProperty) visibleElement).umlClass();
 
 
 					Integer level = (Integer) cbLevels.getSelectedItem();
@@ -278,18 +292,34 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 					HierarchyUtil.changeLevel(hierarchy, level);
 
 					//set hierarchy parent if possible (only one association)
-					List<Hierarchy> possibleParents = ParentChildUtil.possibleParents(panel, hierarchy, level - 1);
-					if (possibleParents != null && possibleParents.size() == 1){
-						HierarchyUtil.updateParent(hierarchy, possibleParents.get(0));
-						hierarchyParentTf.setText(possibleParents.get(0).toString());
-						List<VisibleAssociationEnd> viaAssociationEnd = ParentChildUtil.possibleAssociationEnds(panel, hierarchy);
-						if (hierarchy.getViaAssociationEnd() != null)
-							viaAssociationEndTf.setText(hierarchy.getViaAssociationEnd().toString());
-
-						if (viaAssociationEnd != null && viaAssociationEnd.size() > 1)
-							viaAssociationEndBtn.setEnabled(true);
-						else
-							viaAssociationEndBtn.setEnabled(false);
+					if(panel instanceof ParentChild){
+						List<Hierarchy> possibleParents = ParentChildUtil.possibleParents((ParentChild)panel, hierarchy, level - 1);
+						if (possibleParents != null && possibleParents.size() == 1){
+							HierarchyUtil.updateParent(hierarchy, possibleParents.get(0));
+							hierarchyParentTf.setText(possibleParents.get(0).toString());
+							List<VisibleAssociationEnd> viaAssociationEnd = ParentChildUtil.possibleAssociationEnds((ParentChild)panel, hierarchy);
+							if (hierarchy.getViaAssociationEnd() != null)
+								viaAssociationEndTf.setText(hierarchy.getViaAssociationEnd().toString());
+	
+							if (viaAssociationEnd != null && viaAssociationEnd.size() > 1)
+								viaAssociationEndBtn.setEnabled(true);
+							else
+								viaAssociationEndBtn.setEnabled(false);
+						}
+					} else if(panel instanceof ManyToMany){
+						List<Hierarchy> possibleParents = ManyToManyUtil.possibleParents((ManyToMany)panel, hierarchy, level - 1);
+						if (possibleParents != null && possibleParents.size() == 1){
+							HierarchyUtil.updateParent(hierarchy, possibleParents.get(0));
+							hierarchyParentTf.setText(possibleParents.get(0).toString());
+							List<VisibleAssociationEnd> viaAssociationEnd = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
+							if (hierarchy.getViaAssociationEnd() != null)
+								viaAssociationEndTf.setText(hierarchy.getViaAssociationEnd().toString());
+	
+							if (viaAssociationEnd != null && viaAssociationEnd.size() > 1)
+								viaAssociationEndBtn.setEnabled(true);
+							else
+								viaAssociationEndBtn.setEnabled(false);
+						}
 					}
 
 					else {
@@ -308,15 +338,22 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 		hierarchyParentBtn.addActionListener(new AbstractAction() {
 
 			public void actionPerformed(ActionEvent e) {
-				ParentChild panel = (ParentChild) ((UmlProperty) visibleElement).umlClass();
+				UmlClass panel = ((UmlProperty) visibleElement).umlClass();
 				Hierarchy hierarchy = (Hierarchy) visibleElement;
 				//only enable users to chose hierarchies linked with the current one
-				List<Hierarchy> hierarcyList;
-				if (hierarchy.getLevel() == -1)
-					hierarcyList = ParentChildUtil.possibleParents(panel, hierarchy, -1);
-				else
-					hierarcyList = ParentChildUtil.possibleParents(panel, hierarchy, hierarchy.getLevel() - 1);
-
+				List<Hierarchy> hierarcyList = null;
+				if(panel instanceof ParentChild){
+					if (hierarchy.getLevel() == -1)
+						hierarcyList = ParentChildUtil.possibleParents((ParentChild)panel, hierarchy, -1);
+					else
+						hierarcyList = ParentChildUtil.possibleParents((ParentChild)panel, hierarchy, hierarchy.getLevel() - 1);
+				}else if(panel instanceof ManyToMany){
+					if (hierarchy.getLevel() == -1)
+						hierarcyList = ManyToManyUtil.possibleParents((ManyToMany)panel, hierarchy, -1);
+					else
+						hierarcyList = ManyToManyUtil.possibleParents((ManyToMany)panel, hierarchy, hierarchy.getLevel() - 1);
+				}
+				
 				if (hierarcyList == null){
 					JOptionPane.showMessageDialog(null, "No suitable parent hierarchies");
 					return;
@@ -334,10 +371,16 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 
 			public void actionPerformed(ActionEvent e) {
 				Hierarchy hierarchy = (Hierarchy) visibleElement;
-				ParentChild panel = (ParentChild) ((UmlProperty) visibleElement).umlClass();
-
-				List<VisibleAssociationEnd> viaAssociationEndList = ParentChildUtil.possibleAssociationEnds(panel, hierarchy);
-
+				
+				UmlClass panel = ((UmlProperty) visibleElement).umlClass();
+				
+				List<VisibleAssociationEnd> viaAssociationEndList = null;
+				if(panel instanceof ParentChild){
+					viaAssociationEndList = ParentChildUtil.possibleAssociationEnds((ParentChild)panel, hierarchy);
+				}else if(panel instanceof ManyToMany){
+					viaAssociationEndList = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
+				}
+				
 				VisibleAssociationEnd viaAssociationEnd = (VisibleAssociationEnd) ListDialog.showDialog(viaAssociationEndList.toArray(), "Choose via association end:");
 
 				if (viaAssociationEnd != null) {
@@ -351,11 +394,15 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 
 			public void actionPerformed(ActionEvent e) {
 				Hierarchy hierarchy = (Hierarchy) visibleElement;
-				ParentChild panel = (ParentChild) ((UmlProperty) visibleElement).umlClass();
+				UmlClass panel = ((UmlProperty) visibleElement).umlClass();
 
 				List<VisibleClass> targetPanelList = new ArrayList<VisibleClass>();
 				if (hierarchy.getTargetPanel() != null) {
-					targetPanelList = ParentChildUtil.getPossibleAppliedToPanels(panel, (ParentChild) hierarchy.getTargetPanel());
+					if(panel instanceof ParentChild){
+						targetPanelList = ParentChildUtil.getPossibleAppliedToPanels((ParentChild) panel,  (ParentChild)hierarchy.getTargetPanel());
+					} if(panel instanceof ManyToMany){
+						targetPanelList = ManyToManyUtil.getPossibleAppliedToPanels((ManyToMany) panel,  (ManyToMany)hierarchy.getTargetPanel());
+					}
 				}
 				VisibleClass targetPanel = (VisibleClass) ListDialog.showDialog(targetPanelList.toArray(), "Choose applied to panel");
 

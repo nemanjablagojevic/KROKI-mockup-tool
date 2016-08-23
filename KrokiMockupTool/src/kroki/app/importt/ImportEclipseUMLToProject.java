@@ -473,6 +473,8 @@ public class ImportEclipseUMLToProject extends ProgressWorker{
 				if(isParentChildClass(classHelper))
 				{
 					//TODO:Namestiti da se ubacuje hierarchy 
+				}else if(isManyToManyClass(classHelper)){
+					//TODO:Namestiti da se ubacuje hierarchy 
 				}else
 				{
 					VisibleClass panel = createStandardPanel(classHelper.getName(),subsystemOwner);
@@ -510,6 +512,18 @@ public class ImportEclipseUMLToProject extends ProgressWorker{
 	 */
 	public boolean isParentChildClass(ClassImpl object){
 		if(ClassStereotype.isParenChildStereotypeApplied(object))
+			return true;
+		else
+		{
+			for(Property property:object.getAttributes())
+				if(PropertyStereotype.isHierarchyStereotypeApplied(property))
+					return true;
+		}
+		return false;
+	}
+	
+	public boolean isManyToManyClass(ClassImpl object){
+		if(ClassStereotype.isManyToManyStereotypeApplied(object))
 			return true;
 		else
 		{

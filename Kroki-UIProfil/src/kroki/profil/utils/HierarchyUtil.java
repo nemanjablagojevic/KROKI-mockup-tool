@@ -9,8 +9,10 @@ import kroki.mockup.model.components.NullComponent;
 import kroki.profil.association.Hierarchy;
 import kroki.profil.association.VisibleAssociationEnd;
 import kroki.profil.association.Zoom;
+import kroki.profil.panel.ContainerPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 
 /**
@@ -36,7 +38,7 @@ public class HierarchyUtil {
 			boolean reset = false;
 			if (newAppliedTo != null){
 				panel = h.getTargetPanel();
-				if (panel instanceof ParentChild)
+				if (panel instanceof ParentChild || panel instanceof ManyToMany)
 					panel = h.getAppliedToPanel();
 				Zoom associationEnd = null;
 				boolean contains = false;
@@ -84,7 +86,7 @@ public class HierarchyUtil {
 
 			if (newTarget != null && newTarget instanceof StandardPanel){
 				panel = h.getTargetPanel();
-				if (panel instanceof ParentChild)
+				if (panel instanceof ParentChild || panel instanceof ManyToMany)
 					panel = h.getAppliedToPanel();
 				Zoom associationEnd = null;
 				boolean contains = false;
@@ -139,7 +141,12 @@ public class HierarchyUtil {
 	 */
 	public static List<Hierarchy> childHierarchies(Hierarchy hierarchy){
 		List<Hierarchy> ret = new ArrayList<Hierarchy>();
-		ParentChild panel = (ParentChild)hierarchy.umlClass();
+		ContainerPanel panel = null; 
+		if(hierarchy.umlClass() instanceof ParentChild){
+			panel = (ParentChild)hierarchy.umlClass();
+		}else if(hierarchy.umlClass() instanceof ManyToMany){
+			panel = (ManyToMany)hierarchy.umlClass();
+		}
 		for (Hierarchy h : VisibleClassUtil.containedHierarchies(panel))
 			if (h.getHierarchyParent() == hierarchy)
 				ret.add(h);
@@ -196,8 +203,15 @@ public class HierarchyUtil {
 		hierarchy.setHierarchyParent(hierarchyParent);
 		if (hierarchyParent != null) {
 			hierarchy.setLevel(hierarchy.getHierarchyParent().getLevel() + 1);
-			ParentChild panel = (ParentChild) hierarchy.umlClass();
-			List<VisibleAssociationEnd> viaAssociationEnd = ParentChildUtil.possibleAssociationEnds(panel, hierarchy);
+			ContainerPanel panel = (ParentChild) hierarchy.umlClass();
+			List<VisibleAssociationEnd> viaAssociationEnd = null;
+			if(hierarchy.umlClass() instanceof ParentChild){
+				panel = (ParentChild) hierarchy.umlClass();
+				viaAssociationEnd = ParentChildUtil.possibleAssociationEnds((ParentChild)panel, hierarchy);
+			}else if(hierarchy.umlClass() instanceof ManyToMany){
+				panel = (ManyToMany) hierarchy.umlClass();
+				viaAssociationEnd = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
+			}
 			if (viaAssociationEnd != null && viaAssociationEnd.size() == 1)
 				hierarchy.setViaAssociationEnd(viaAssociationEnd.get(0));
 		}
@@ -212,16 +226,26 @@ public class HierarchyUtil {
 	 * @param panel Parent-child panel containing the hierarchy
 	 * @param hierarchy Hierarchy
 	 */
-	public static void setHierarchhyAttributes(ParentChild panel, Hierarchy hierarchy){
+	public static void setHierarchhyAttributes(ContainerPanel panel, Hierarchy hierarchy){
+		
 		if (hierarchy.getLevel() != 0)
 			return;
-		int count = ParentChildUtil.getHierarchyCount(panel);
+		int count = 0;
+		if(panel instanceof ParentChild){
+			count = ParentChildUtil.getHierarchyCount((ParentChild)panel);
+		}else if(panel instanceof ManyToMany){
+			count = ManyToManyUtil.getHierarchyCount((ManyToMany)panel);
+		}
 		if (count == 0) {
 			hierarchy.setLevel(1);
 			hierarchy.setHierarchyParent(null);
 		} else if (count == 1) {
 			hierarchy.setLevel(2);
-			hierarchy.setHierarchyParent(ParentChildUtil.getHierarchyRoot(panel));
+			if(panel instanceof ParentChild){
+				hierarchy.setHierarchyParent(ParentChildUtil.getHierarchyRoot((ParentChild)panel));
+			}else if(panel instanceof ManyToMany){
+				hierarchy.setHierarchyParent(ManyToManyUtil.getHierarchyRoot((ManyToMany)panel));
+			}
 		} else {
 			//if the panel has two or more element
 			//hierarchy panel and level will stay undefined until target panel is picked

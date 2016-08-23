@@ -20,8 +20,10 @@ import adapt.enumerations.OpenedAs;
 import adapt.enumerations.PanelType;
 import adapt.exceptions.EntityAttributeNotFoundException;
 import adapt.model.AbstractElement;
+import adapt.model.ejb.AbstractAttribute;
 import adapt.model.ejb.EntityBean;
 import adapt.model.ejb.JoinColumnAttribute;
+import adapt.model.panel.AdaptManyToManyPanel;
 import adapt.model.panel.AdaptPanel;
 import adapt.model.panel.AdaptParentChildPanel;
 import adapt.model.panel.AdaptStandardPanel;
@@ -33,6 +35,7 @@ import adapt.util.ejb.PersisenceHelper;
 import adapt.util.html.HTMLToolbarAction;
 import adapt.util.html.OperationGroup;
 import adapt.util.html.TableModel;
+import adapt.util.resolvers.PanelTypeResolver;
 import adapt.util.xml_readers.PanelReader;
 import ejb.AdaptPermission;
 import ejb.AdaptRole;
@@ -51,8 +54,10 @@ public class ViewResource extends BaseResource {
 			String panelName = (String)getRequest().getAttributes().get("activate");
 			String childPanelName  = (String)getRequest().getAttributes().get("childPanelName");
 			String associationEnd = (String)getRequest().getAttributes().get("associationEnd");
-			String pid = (String) getRequest().getAttributes().get("pid");				
-			PanelType panelType = PanelType.STANDARDPANEL;
+			String pid = (String) getRequest().getAttributes().get("pid");
+			String filter = (String) getRequest().getAttributes().get("filter");
+			PanelType panelType =  PanelType.STANDARDPANEL;
+
 			ArrayList<AdaptStandardPanel> panels = new ArrayList<AdaptStandardPanel>();
 			
 			//Standard form request
@@ -61,12 +66,34 @@ public class ViewResource extends BaseResource {
 				AdaptPanel panel = PanelReader.loadPanel(panelName, panelType, null, OpenedAs.DEFAULT);
 				if(panelType == PanelType.STANDARDPANEL) {
 					AdaptStandardPanel stdPanel = (AdaptStandardPanel) panel;
-					String query = "FROM " + stdPanel.getEntityBean().getEntityClass().getName();
+					String query = "FROM " + stdPanel.getEntityBean().getEntityClass().getName()+" bean";
+					if(filter!=null){
+						String[] filterPart = filter.split("=");
+						AdaptStandardPanel valuePanel = (AdaptStandardPanel) PanelReader.loadPanel(filterPart[0], PanelType.STANDARDPANEL, null, OpenedAs.DEFAULT);
+						for(AbstractAttribute attr: stdPanel.getEntityBean().getAttributes()){
+							if(attr instanceof JoinColumnAttribute){
+								JoinColumnAttribute jka = (JoinColumnAttribute)attr;
+								if(jka.getLookupClass().equals(valuePanel.getEntityBean().getEntityClass())){
+									query+=" WHERE bean."+ attr.getFieldName()+".id = "+filterPart[1];
+								}
+							}
+							
+						}
+						
+					}
 					prepareContent(panel, query);
 					panels.add(stdPanel);
 				}else if (panelType == PanelType.PARENTCHILDPANEL) {
 					AdaptParentChildPanel pcPanel = (AdaptParentChildPanel)panel;
 					for (AdaptStandardPanel adaptStandardPanel : pcPanel.getPanels()) {
+						System.out.println("Imam panel: " + adaptStandardPanel.getName());
+						String query = "FROM " + adaptStandardPanel.getEntityBean().getEntityClass().getName();
+						prepareContent(adaptStandardPanel, query);
+						panels.add(adaptStandardPanel);
+					}
+				}else if (panelType == PanelType.MANYTOMANYPANEL) {
+					AdaptManyToManyPanel mtmPanel = (AdaptManyToManyPanel)panel;
+					for (AdaptStandardPanel adaptStandardPanel : mtmPanel.getPanels()) {
 						System.out.println("Imam panel: " + adaptStandardPanel.getName());
 						String query = "FROM " + adaptStandardPanel.getEntityBean().getEntityClass().getName();
 						prepareContent(adaptStandardPanel, query);
@@ -113,6 +140,7 @@ public class ViewResource extends BaseResource {
 				prepareTableData(stdPanel, query);
 				prepareInputForm(stdPanel);
 				prepareOperationGroups(stdPanel);
+				addToDataModel("isReportPanel", stdPanel.getReportPanel());
 				//break;
 			//}
 		}

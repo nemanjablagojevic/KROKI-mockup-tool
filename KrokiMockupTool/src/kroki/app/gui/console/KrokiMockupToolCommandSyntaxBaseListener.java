@@ -55,6 +55,18 @@ public class KrokiMockupToolCommandSyntaxBaseListener implements KrokiMockupTool
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterMakeManyToManyPanel(@NotNull KrokiMockupToolCommandSyntaxParser.MakeManyToManyPanelContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMakeManyToManyPanel(@NotNull KrokiMockupToolCommandSyntaxParser.MakeManyToManyPanelContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterMakeProject(@NotNull KrokiMockupToolCommandSyntaxParser.MakeProjectContext ctx) { }
 	/**
 	 * {@inheritDoc}

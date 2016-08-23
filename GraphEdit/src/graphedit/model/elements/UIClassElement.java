@@ -38,9 +38,11 @@ import kroki.profil.operation.Transaction;
 import kroki.profil.operation.VisibleOperation;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.utils.ElementsGroupUtil;
+import kroki.profil.utils.ManyToManyUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.StandardPanelUtil;
 import kroki.profil.utils.UIPropertyUtil;
@@ -147,6 +149,10 @@ public class UIClassElement extends ClassElement{
 			umlClass = new ParentChild();
 			ParentChildUtil.defaultGuiSettings((ParentChild)umlClass);
 		}
+		else if (stereotype.equals(ClassStereotypeUI.MANY_TO_MANY.toString())){
+			umlClass = new ManyToMany();
+			ManyToManyUtil.defaultGuiSettings((ManyToMany)umlClass);
+		}
 		
 		visibleClass = (VisibleClass)umlClass;
 		visibleClass.setLabel(label);
@@ -205,6 +211,8 @@ public class UIClassElement extends ClassElement{
 		element.setRepresentedElement(this);
 		if (visibleClass instanceof StandardPanel)
 			element.setProperty(GraphElementProperties.STEREOTYPE,ClassStereotypeUI.STANDARD_PANEL.toString());
+		else if (visibleClass instanceof ManyToMany)
+			element.setProperty(GraphElementProperties.STEREOTYPE,ClassStereotypeUI.MANY_TO_MANY.toString());
 		else
 			element.setProperty(GraphElementProperties.STEREOTYPE, ClassStereotypeUI.PARENT_CHILD.toString());
 

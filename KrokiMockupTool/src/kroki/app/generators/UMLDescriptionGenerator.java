@@ -15,12 +15,14 @@ import kroki.profil.association.Hierarchy;
 import kroki.profil.association.Zoom;
 import kroki.profil.operation.Report;
 import kroki.profil.operation.VisibleOperation;
+import kroki.profil.panel.ParameterPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
 import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.subsystem.BussinesSubsystem;
+import kroki.profil.utils.ManyToManyUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.VisibleClassUtil;
 
@@ -31,6 +33,7 @@ public class UMLDescriptionGenerator {
 	DiagramProfile profile;
 	String connections;
 	String parentChildDescriptions;
+	String manyToManyDescriptions;
 	
 	/**
 	 * Generates UML description for PlantUML
@@ -43,6 +46,7 @@ public class UMLDescriptionGenerator {
 		String desc = "@startuml \n";
 		connections = "\n";
 		parentChildDescriptions = "";
+		manyToManyDescriptions = "";
 		this.profile = profile;
 		
 		if(isProject(project)) {
@@ -54,6 +58,7 @@ public class UMLDescriptionGenerator {
 			getClassConnections(exporter.getElements());
 			desc += connections;
 			desc += parentChildDescriptions + "\n";
+			desc += manyToManyDescriptions + "\n";
 		}else {
 			//if package is selected, first find project it belongs to
 			BussinesSubsystem p = findProject(project);
@@ -67,10 +72,13 @@ public class UMLDescriptionGenerator {
 					ArrayList<EJBClass> packClasses = getSubsystemClasses(packName, exporter.getClasses());
 					ArrayList<VisibleElement> packElements = getElementsFromClasses(packClasses, exporter.getElements());
 					ArrayList<VisibleElement> packPCElements = getParentChildElements(exporter.getElements(), packName);
+					ArrayList<VisibleElement> packMTMElements = getManyToManyElements(exporter.getElements(), packName);
 					packElements.addAll(packPCElements);
+					packElements.addAll(packMTMElements);
 					getClassConnections(packElements);
 					desc += connections;
 					desc += parentChildDescriptions;
+					desc += manyToManyDescriptions;
 				}
 			}
 			
@@ -91,10 +99,11 @@ public class UMLDescriptionGenerator {
 		ArrayList<EJBClass> subsysClasses = getSubsystemClasses(packName, exporter.getClasses());
 		//first find all standard panel elements for current package
 		ArrayList<VisibleElement> subsystemElements = getElementsFromClasses(subsysClasses, exporter.getElements());
-		//then all parent-child elements
 		ArrayList<VisibleElement> subsysPCElements = getParentChildElements(exporter.getElements(), packName);
+		ArrayList<VisibleElement> subsysMTMElements = getManyToManyElements(exporter.getElements(), packName);
 		//and then concatenate these lists
 		subsystemElements.addAll(subsysPCElements);
+		subsystemElements.addAll(subsysMTMElements);
 		if(profile == DiagramProfile.PERSISTENT_PROFILE) {
 			if(!subsysClasses.isEmpty()) {
 				for (EJBClass ejbClass : subsysClasses) {
@@ -208,6 +217,18 @@ public class UMLDescriptionGenerator {
 					String hName = namer.toCamelCase(h.getTargetPanel().getComponent().getName(), false);
 					connections += "\n" + elName + " \"1\" -- \"1\" " + hName + ":<<hierarchy>> {level =" + h.getLevel() +"}"; 
 				}
+			}else if(element instanceof ManyToMany){
+				ManyToMany mtm = (ManyToMany) element;
+				for (Hierarchy h : ManyToManyUtil.allContainedHierarchies(mtm)) {
+					String hName = namer.toCamelCase(h.getTargetPanel().getComponent().getName(), false);
+					connections += "\n" + elName + " \"1\" -- \"1\" " + hName + ":<<hierarchy>> {level =" + h.getLevel() +"}"; 
+				}
+			}if(element instanceof ParameterPanel) {
+				VisibleClass vClass = (VisibleClass) element;
+				for (Zoom zoom : VisibleClassUtil.containedZooms(vClass)) {
+					String zoomed = namer.toCamelCase(zoom.getTargetPanel().getComponent().getName(), false);
+					connections += "\n" + elName + " \"*\" -- \"1 <<zoom>>\" " + zoomed;
+				}
 			}
 		}
 	}
@@ -290,6 +311,30 @@ public class UMLDescriptionGenerator {
 //				else {
 //					parentChildDescriptions += "\nclass " + pcName + " <<ParentChild>>\n";
 //				}
+			}
+		}
+		return els;
+	}
+	
+	public ArrayList<VisibleElement> getManyToManyElements(ArrayList<VisibleElement> elements, String packageName) {
+		ArrayList<VisibleElement> els = new ArrayList<VisibleElement>();
+		for (VisibleElement element : elements) {
+			//since many-to-many elements don't have ejb class accociated, package is determined by their child panels
+			if(element instanceof ManyToMany) {
+				ManyToMany mtm = (ManyToMany) element;
+				//if all child panels are in the same package, place parent panel in that package,
+				//else, place it in separate package called 'many-to-many panels'
+				boolean samePackage = true;
+				for (Hierarchy hier : ManyToManyUtil.allContainedHierarchies(mtm)) {
+					String targetPanel = namer.toCamelCase(hier.getTargetPanel().getComponent().getName(), false);
+					EJBClass panelClazz = getClassByName(targetPanel, exporter.getClasses());
+					if(!panelClazz.getSubsystem().equalsIgnoreCase(packageName)) {
+						samePackage = false;
+					}
+				}
+				if(samePackage) {
+					els.add(element);
+				}
 			}
 		}
 		return els;

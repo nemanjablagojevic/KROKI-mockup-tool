@@ -16,6 +16,7 @@ import adapt.resources.DeleteResource;
 import adapt.resources.GetZoomsResource;
 import adapt.resources.HomeResource;
 import adapt.resources.IndexResource;
+import adapt.resources.ManyToManyInfoResource;
 import adapt.resources.ModifyResource;
 import adapt.resources.ParentChildInfoResource;
 import adapt.resources.PrintResource;
@@ -122,12 +123,15 @@ public class AdaptApplication extends Application {
 		router.attach("/", IndexResource.class);
 		router.attach("/homepage", HomeResource.class);
 		router.attach("/show/{activate}", ViewResource.class);
+		router.attach("/showWP/{activate}/{filter}", ViewResource.class);
 		router.attach("/showChildren/{childPanelName}/{associationEnd}/{pid}", ViewResource.class);
+		router.attach("/showChildrenMTM/{childPanelName}/{associationEnd}/{pid}", ManyToManyInfoResource.class);
 		router.attach("/add/{entityName}", AddResource.class);
 		router.attach("/delete/{panelName}/{delid}", DeleteResource.class);
 		router.attach("/edit/{panelName}/{mid}/{pid}", ModifyResource.class); // ModifyResource just prepares edit form
 		router.attach("/edited/{entityName}/{modid}", AddResource.class); // AddResource does the actual modifications
 		router.attach("/getInfo/{pcPanel}", ParentChildInfoResource.class);
+		router.attach("/getInfoMTM/{mtmPanel}/{zoomId}", ManyToManyInfoResource.class);
 		router.attach("/getZooms/{panelName}/{zoomName}/{zid}", GetZoomsResource.class);
 		router.attach("/printForm", PrintResource.class);
 		

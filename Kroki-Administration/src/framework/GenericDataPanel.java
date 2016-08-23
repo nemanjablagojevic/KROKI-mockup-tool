@@ -65,6 +65,7 @@ public class GenericDataPanel extends JPanel {
 		add(statusBar, BorderLayout.SOUTH);
 	}
 	
+	
 	public void clearDataPanel(JPanel panel){
 		Component[] components = panel.getComponents();
 		for(Component c : components){

@@ -17,8 +17,10 @@ import kroki.app.utils.ImageResource;
 import kroki.commons.camelcase.NamingUtil;
 import kroki.profil.VisibleElement;
 import kroki.profil.association.Hierarchy;
+import kroki.profil.panel.ParameterPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.subsystem.BussinesSubsystem;
 import kroki.profil.utils.VisibleClassUtil;
@@ -185,6 +187,16 @@ public class AdministrationSubsytemAction extends AbstractAction{
 					activate =cc.toCamelCase(pcPanel.name(), false) + "_pc"; 
 					//activate = cc.toCamelCase(element.name(), false) + "_pc";
 					resource.setPaneltype("parent-child");
+				} else if (panelTypeTemp.contains("many-to-many")) {
+					ManyToMany mtmPanel = (ManyToMany)element;
+					activate =cc.toCamelCase(mtmPanel.name(), false) + "_mtm"; 
+					//activate = cc.toCamelCase(element.name(), false) + "_pc";
+					resource.setPaneltype("many-to-many");
+				}  else if (panelTypeTemp.contains("parameter-panel")) {
+					ParameterPanel pPanel = (ParameterPanel)element;
+					activate =cc.toCamelCase(pPanel.name(), false) + "_pp"; 
+					//activate = cc.toCamelCase(element.name(), false) + "_pc";
+					resource.setPaneltype("parameter-panel");
 				}
 				resource.setLink(activate);
 				rDao.save(resource);
@@ -218,6 +230,19 @@ public class AdministrationSubsytemAction extends AbstractAction{
 					}
 					panel_type = panel_type.substring(0, panel_type.length()-1) + "]";
 					panelType.put(element.name(), panel_type);
+				}else if (element instanceof ManyToMany) {
+					ManyToMany mtmPanel = (ManyToMany)element;
+					String panel_type = "many-to-many";
+					
+					//add list to contained panels enclosed in square brackets
+					panel_type += "[";
+					for(Hierarchy hierarchy: VisibleClassUtil.containedHierarchies(mtmPanel)) {
+						panel_type += cc.toCamelCase(hierarchy.getTargetPanel().getComponent().getName(), false) + ":";
+					}
+					panel_type = panel_type.substring(0, panel_type.length()-1) + "]";
+					panelType.put(element.name(), panel_type);
+				}else if (element instanceof ParameterPanel) {
+					panelType.put(element.name(), "parameter-panel");
 				}
 			} else if (element instanceof BussinesSubsystem) {
 				loadFormDataType((BussinesSubsystem) element);

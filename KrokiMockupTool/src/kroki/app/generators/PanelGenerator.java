@@ -7,30 +7,35 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Attr;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
 import kroki.app.generators.utils.XMLWriter;
 import kroki.commons.camelcase.NamingUtil;
 import kroki.profil.VisibleElement;
 import kroki.profil.association.Hierarchy;
 import kroki.profil.association.Next;
 import kroki.profil.association.VisibleAssociationEnd;
+import kroki.profil.association.Zoom;
 import kroki.profil.group.ElementsGroup;
 import kroki.profil.operation.BussinessOperation;
 import kroki.profil.operation.Report;
 import kroki.profil.operation.Transaction;
 import kroki.profil.operation.VisibleOperation;
+import kroki.profil.panel.ParameterPanel;
+import kroki.profil.panel.ReportPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.panel.mode.ViewMode;
 import kroki.profil.panel.std.StdPanelSettings;
+import kroki.profil.utils.ManyToManyUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.VisibleClassUtil;
 import kroki.uml_core_basic.UmlParameter;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Generates panels, standard and parent-child
@@ -62,10 +67,13 @@ public class PanelGenerator {
 			Element parentChildRoot = doc.createElement("parent-child-panels");
 			//root element for many-to-many panels
 			Element mtmPanelsRoot = doc.createElement("many-to-many-panels");
+			//root element for standard panel
+			Element pPanelsRoot = doc.createElement("parameter-panels");
 			
 			root.appendChild(stdPanelsRoot);
 			root.appendChild(parentChildRoot);
 			root.appendChild(mtmPanelsRoot);
+			root.appendChild(pPanelsRoot);
 			
 			
 			  /************************************/
@@ -106,6 +114,13 @@ public class PanelGenerator {
 					Attr ejbRefAttr = doc.createAttribute("ejb-ref");
 					ejbRefAttr.setValue(ejbRef);
 					stdPanel.setAttributeNode(ejbRefAttr);
+					
+					if(element instanceof ReportPanel){
+					Attr reportPanelAttr = doc.createAttribute("reportPanel");
+						reportPanelAttr.setValue(Boolean.TRUE.toString());
+						stdPanel.setAttributeNode(reportPanelAttr);
+					}
+					
 					
 					//generisanje <settings> taga for standardni panel
 					Element eSettings = doc.createElement("settings");
@@ -160,17 +175,29 @@ public class PanelGenerator {
 							
 							//attribute activate
 							VisibleClass vclTarget = next.getTargetPanel();
-							if(vclTarget instanceof StandardPanel) {
-								StandardPanel stdPanelTarget = (StandardPanel)vclTarget;
-								String panelName = stdPanelTarget.getPersistentClass().name().toLowerCase() + "_st";
+							if(vclTarget instanceof StandardPanel || vclTarget instanceof ManyToMany) {
+								String panelName = null;
+								if(vclTarget instanceof StandardPanel){
+									StandardPanel stdPanelTarget = (StandardPanel)vclTarget;
+									panelName = stdPanelTarget.getPersistentClass().name().toLowerCase() + "_st";
+									
+									Attr linkPanelTypeAttr = doc.createAttribute("panel-type");
+									linkPanelTypeAttr.setNodeValue("STANDARDPANEL");
+									linkTag.setAttributeNode(linkPanelTypeAttr);
+									
+								}else if(vclTarget instanceof ManyToMany){
+									ManyToMany manyToManyTarget = (ManyToMany)vclTarget;
+									NamingUtil nu = new NamingUtil();
+									panelName = nu.toCamelCase(manyToManyTarget.getLabel(), false) + "_mtm";
+									
+									Attr linkPanelTypeAttr = doc.createAttribute("panel-type");
+									linkPanelTypeAttr.setNodeValue("MANYTOMANYPANEL");
+									linkTag.setAttributeNode(linkPanelTypeAttr);
+								}
 								
 								Attr linkNameAttr = doc.createAttribute("name");
 								linkNameAttr.setNodeValue(label.toLowerCase().replaceAll(" ", ""));
 								linkTag.setAttributeNode(linkNameAttr);
-								
-								Attr linkPanelTypeAttr = doc.createAttribute("panel-type");
-								linkPanelTypeAttr.setNodeValue("STANDARDPANEL");
-								linkTag.setAttributeNode(linkPanelTypeAttr);
 								
 								Attr linkPanelAttr = doc.createAttribute("panel-ref");
 								linkPanelAttr.setNodeValue(panelName);
@@ -378,6 +405,249 @@ public class PanelGenerator {
 						pcTag.appendChild(hPanelTag);
 						
 					}
+				}else if (element instanceof ManyToMany) {
+					ManyToMany mtmPanel = (ManyToMany)element;
+					//System.out.println("[PARENT CHILD PANEL] id = " + cc.toCamelCase(pcPanel.name() + "_pc", false) + ", label = " + pcPanel.getLabel() );
+					
+					Element mtmTag = doc.createElement("many-to-many");
+					mtmPanelsRoot.appendChild(mtmTag);
+				
+					//attribute id
+					Attr mtmIdAttr = doc.createAttribute("id");
+					mtmIdAttr.setValue(cc.toCamelCase(mtmPanel.name(), false) +  "_mtm");
+					mtmTag.setAttributeNode(mtmIdAttr);
+					
+					//attribute label
+					Attr mtmLabelAttr = doc.createAttribute("label");
+					mtmLabelAttr.setValue(mtmPanel.getLabel());
+					mtmTag.setAttributeNode(mtmLabelAttr);
+					
+					//for every panelin the hierarchy put  <panel> tag
+					//<panel id="dnmp_sk" level="4" panel-ref="sektor_st" />
+					for(int m=0; m < ManyToManyUtil.allContainedHierarchies(mtmPanel).size(); m++) {
+						Hierarchy h = ManyToManyUtil.allContainedHierarchies(mtmPanel).get(m);
+						StandardPanel hPanel = (StandardPanel) h.getTargetPanel();
+						System.out.println("Hierarhija: id = " + h.name() + ", panel-ref = " + hPanel.getPersistentClass().name().toLowerCase() + "_st, level = " + h.getLevel());
+						
+						Element hPanelTag = doc.createElement("panel");
+						
+						//attribute id
+						Attr hPanelIdAttr = doc.createAttribute("id");
+						hPanelIdAttr.setValue(hPanel.name());
+						hPanelTag.setAttributeNode(hPanelIdAttr);
+						
+						//attribute panel-ref
+						Attr hPanelRefAttr = doc.createAttribute("panel-ref");
+						hPanelRefAttr.setValue(hPanel.getPersistentClass().name().toLowerCase() + "_st");
+						hPanelTag.setAttributeNode(hPanelRefAttr);
+						
+						//attribute level
+						Attr hPanelLevel = doc.createAttribute("level");
+						hPanelLevel.setValue(String.valueOf(h.getLevel()));
+						hPanelTag.setAttributeNode(hPanelLevel);
+						
+						//association end
+						if(h.getLevel() > 0) {
+							System.out.println(h.getLabel() +  " [LEVEL = "  + h.getLevel() + "]");
+							Attr hPanelAssociationEnd = doc.createAttribute("association-end");
+							VisibleAssociationEnd associationEnd = h.getViaAssociationEnd();
+							if(associationEnd.name() != null) {
+								System.out.println("ASSOCIATION END: " + h.getViaAssociationEnd().name());
+								hPanelAssociationEnd.setValue(associationEnd.name());
+							}else {
+								System.out.println("ASSOCIATION END: " + associationEnd.toString());
+								hPanelAssociationEnd.setValue(associationEnd.getLabel().replaceAll(" ", "_"));
+							}
+							hPanelTag.setAttributeNode(hPanelAssociationEnd);
+							
+						}
+						mtmTag.appendChild(hPanelTag);
+						
+					}
+					Zoom zoom = ManyToManyUtil.getZoom(mtmPanel);
+					if(zoom != null){
+						Element zoomTag = doc.createElement("zoom");
+						
+						//attribute id
+						Attr zoomIdAttr = doc.createAttribute("id");
+						zoomIdAttr.setValue(zoom.getLabel());
+						zoomTag.setAttributeNode(zoomIdAttr);
+						
+						//attribute panel-ref
+						Attr zoomRefAttr = doc.createAttribute("panel-ref");
+						zoomRefAttr.setValue(zoom.getTargetPanel().getLabel().toLowerCase() + "_st");
+						zoomTag.setAttributeNode(zoomRefAttr);
+						
+						mtmTag.appendChild(zoomTag);
+					}
+					
+				} else if(element instanceof ParameterPanel) {
+					ParameterPanel panel = (ParameterPanel)element;
+					StdPanelSettings settings = panel.getStdPanelSettings();
+					
+					Element pPanel = doc.createElement("parameter-panel");
+					
+					String id = panel.getPersistentClass().name().toLowerCase() + "_pp";
+					String ejbRef = "ejb." + panel.getPersistentClass().name();
+					if(repo != null) {
+						ejbRef = "ejb_generated." + panel.getPersistentClass().name();
+					}
+						
+					
+					//attribute "id"
+					Attr idAttr = doc.createAttribute("id");
+					idAttr.setValue(id);
+					pPanel.setAttributeNode(idAttr);
+					
+					//attribute "ejb-ref"
+					Attr ejbRefAttr = doc.createAttribute("ejb-ref");
+					ejbRefAttr.setValue(ejbRef);
+					pPanel.setAttributeNode(ejbRefAttr);
+					
+					Element eSettings = doc.createElement("settings");
+					
+					Attr viewModeAttr = doc.createAttribute("view-mode");
+					if(settings.getDefaultViewMode() == ViewMode.INPUT_PANEL_MODE) {
+						viewModeAttr.setValue("panel");
+					}else {
+						viewModeAttr.setValue("table");
+					}
+					
+					eSettings.setAttributeNode(viewModeAttr);
+					//attribute change-mode
+					Attr changeModeAttr = doc.createAttribute("change-mode");
+					changeModeAttr.setValue(String.valueOf(panel.isChangeMode()));
+					eSettings.setAttributeNode(changeModeAttr);
+					//attribute data-navigation
+					Attr dataNavAttr = doc.createAttribute("data-navigation");
+					dataNavAttr.setValue(String.valueOf(panel.isDataNavigation()));
+					eSettings.setAttributeNode(dataNavAttr);
+					
+					pPanel.appendChild(eSettings);
+					
+					//<operations> tag
+					if(!VisibleClassUtil.containedOperations(vClass).isEmpty()) {
+						Element operationsTag = doc.createElement("operations");
+						pPanel.appendChild(operationsTag);
+						
+						for(int k=0; k < VisibleClassUtil.containedOperations(vClass).size(); k++) {
+							VisibleOperation vo = VisibleClassUtil.containedOperations(vClass).get(k);
+							if(vo instanceof BussinessOperation) {
+								Element opTag = doc.createElement("operation");
+								ElementsGroup elemGroup = vo.getParentGroup();
+								String groupName = "operations";
+								if(elemGroup != null) {
+									groupName = elemGroup.getLabel();
+								}
+								
+								//attribute "name"
+								Attr opNameAttr = doc.createAttribute("name");
+								opNameAttr.setValue(vo.name());
+								opTag.setAttributeNode(opNameAttr);
+								
+								//attribute "label"
+								Attr opLabelAttr = doc.createAttribute("label");
+								opLabelAttr.setValue(vo.getLabel());
+								opTag.setAttributeNode(opLabelAttr);
+								
+								//attribute "elementgroup"
+								if(!groupName.equals("operations")) {
+									Attr opGroupAttr = doc.createAttribute("operationgroup");
+									opGroupAttr.setValue(groupName);
+									opTag.setAttributeNode(opGroupAttr);
+								}
+								
+								//attribute "type"
+								Attr opTypeAttr = doc.createAttribute("type");
+								
+								//if the operation is a report put type="report"
+								if(vo instanceof Report) {
+									opTypeAttr.setValue("report");
+								//if the operation is a transaction put type="transaction"
+								}else if (vo instanceof Transaction) {
+									opTypeAttr.setValue("transaction");
+								}
+								
+								opTag.setAttributeNode(opTypeAttr);
+								
+								//attribute "target"
+								Attr opTargetAttr = doc.createAttribute("target");
+								//cuurently not implemented, so put null
+								if(((BussinessOperation) vo).getPersistentOperation() == null) {
+									opTargetAttr.setValue("null");
+								}else {
+									opTargetAttr.setValue(((BussinessOperation) vo).getPersistentOperation().name());
+								}
+								opTag.setAttributeNode(opTargetAttr);
+								
+								//attribute "allowed"
+								//for now always set to true
+								Attr opAllowedAttr = doc.createAttribute("allowed");
+								opAllowedAttr.setValue("true");
+								opTag.setAttributeNode(opAllowedAttr);
+								
+								//for every parameter: 
+								//<parameter name="name" label="label" type="java.lang.String" parameter-type="in" /> tag
+								if(vo.ownedParameter() != null) {
+									if(!vo.ownedParameter().isEmpty()) {
+										for(int l=0;l<vo.ownedParameter().size();l++) {
+											UmlParameter param = vo.ownedParameter().get(l);
+											
+											Element paramTag = doc.createElement("parameter");
+											
+											//attribute "name"
+											Attr paramNameAttr = doc.createAttribute("name");
+											paramNameAttr.setValue(param.name());
+											paramTag.setAttributeNode(paramNameAttr);
+											
+											//attribute "label"
+											//TODO
+											//not implemented yet  :(
+											Attr paramLabelAttr = doc.createAttribute("label");
+											paramLabelAttr.setValue(param.name());
+											paramTag.setAttributeNode(paramLabelAttr);
+											
+											//attribute "type"
+											Attr paramTypeAttr = doc.createAttribute("type");
+											paramTypeAttr.setValue(param.type().toString());
+											paramTag.setAttributeNode(paramTypeAttr);
+											
+											//attribute "parameter-type"
+											//always set to in for now
+											Attr paramPTypeAttr = doc.createAttribute("parameter-type");
+											paramPTypeAttr.setValue("in");
+											paramTag.setAttributeNode(paramPTypeAttr);
+											
+											opTag.appendChild(paramTag);
+										}
+									}
+								}
+								operationsTag.appendChild(opTag);
+							}
+						}
+						
+						
+					}
+					
+					pPanelsRoot.appendChild(pPanel);
+					
+					  /************************************/
+					 /*         panel-map.xml            */
+					/************************************/
+					//tag <panel>
+					Element mapPanel = mapDoc.createElement("panel");
+					//attribute "id"
+					Attr mapIdAttr = mapDoc.createAttribute("id");
+					mapIdAttr.setValue(id);
+					mapPanel.setAttributeNode(mapIdAttr);
+					//attribute "ejb-ref"
+					Attr mapEjbRefAttr = mapDoc.createAttribute("ejb-ref");
+					mapEjbRefAttr.setValue(ejbRef);
+					mapPanel.setAttributeNode(mapEjbRefAttr);
+					
+					mapRoot.appendChild(mapPanel);
+					
+					//if it is a parent-child panel put panel> tag
 				}
 			}
 			

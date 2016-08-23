@@ -5,13 +5,14 @@ grammar KrokiMockupToolCommandSyntax;
 }
 
 // PARSER, sad cemo samo za make
-makeCommand : (makeProject | makePackage | makeStdPanel | makeParentChildPanel | makeComponent | makeCombozoom | makeHierarchy)+;
+makeCommand : (makeProject | makePackage | makeStdPanel | makeParentChildPanel | makeManyToManyPanel | makeComponent | makeCombozoom | makeHierarchy)+;
 
 makeProject : MAKEPROJECT '"' ELEMENTNAME '"' ;
 makePackage : MAKEPACKAGE '"' ELEMENTNAME '"' IN ELEMENTNAME (('/' ELEMENTNAME)*)? '"' ;
 makeStdPanel : MAKESTDPANEL '"' ELEMENTNAME '"' IN ELEMENTNAME ('/' ELEMENTNAME)+ (LBRAKET (COMPONENTS (';')?)+'}') ;
 makeComponent : MAKECOMPONENT LBRAKET (COMPONENTS (';')?)+ '}' IN ELEMENTNAME ('/' ELEMENTNAME)+;
 makeParentChildPanel : MAKEPARENTCHILDPANEL '"' ELEMENTNAME '"' IN ELEMENTNAME ('/' ELEMENTNAME)+ '"' (LBRAKET (HIERARCHYCOMPONENT (';')?)+ '}')?;
+makeManyToManyPanel : MAKEMANYTOMANYPANEL '"' ELEMENTNAME '"' IN ELEMENTNAME ('/' ELEMENTNAME)+ '"' (LBRAKET (HIERARCHYCOMPONENT (';')?)+ '}')?;
 makeCombozoom : MAKECOMBOZOOM IN ELEMENTNAME ('/' ELEMENTNAME)+;
 makeHierarchy : MAKEHIERARCHY IN ELEMENTNAME ('/' ELEMENTNAME)+;
 
@@ -24,6 +25,7 @@ MAKEPROJECT : 'make project';
 MAKEPACKAGE : 'make package';
 MAKESTDPANEL : 'make std-panel';
 MAKEPARENTCHILDPANEL : 'make pc-panel';
+MAKEMANYTOMANYPANEL : 'make mtm-panel';
 MAKECOMBOZOOM : 'make combozoom';
 MAKEHIERARCHY : 'make hierarchy';
 MAKECOMPONENT : 'make component';

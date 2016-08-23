@@ -1,0 +1,27 @@
+<#if panels??>
+<#if panels?has_content>
+{
+	"panelName": ${panelName},
+	<#if zoomValues??>
+	<#if zoomValues?has_content>
+		"zoomValues": [
+		<#list zoomValues as zoom>
+			{
+				${zoom}
+			}<#if (zoom_has_next)>,</#if>
+		</#list>
+		],
+	</#if>
+	</#if>
+    "panels": [
+        <#list panels as panel>
+        {
+            ${panel}
+
+        } <#if (panel_has_next)>,</#if>
+        </#list>
+    ],
+	"zoomId": ${zoomId}
+}
+</#if>
+</#if>

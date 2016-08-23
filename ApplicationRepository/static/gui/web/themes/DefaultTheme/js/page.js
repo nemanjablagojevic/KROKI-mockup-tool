@@ -138,9 +138,12 @@
     $(document).on("click", ".activator", function(e) {
         e.stopPropagation();
         var activator = $(this);
-        var activate = "/show/" + $(this).attr("data-activate");
+		var dataResId = $(this).attr('data-resourceId');		
+		var activate = "/show/" + $(this).attr("data-activate");
+	
         var label = $(this).attr("data-label");
         var panelType = $(this).attr("data-paneltype");
+		
         var showback = false;
         var next = false;
         var resourceId = $(this).attr("data-activate");
@@ -167,28 +170,55 @@
             var parentId = form.attr("data-resourceid");
 
             resourceId = $(this).attr("data-resourceId");
+			
+			if(dataResId.endsWith('_mtm')){
+				panelType='MANYTOMANYPANEL';
+				activate = "/getInfoMTM/" + resourceId;
+			}
+			
             if(selectedRow.length > 0) {
                 var id = selectedRow.find("#idCell").text();
-                activate = $(this).attr("data-activate") + "/" + id;
-                panelType = "next-panel";
+				if(!id){
+					id=-1; //Need for required parameter
+				}
+                if(panelType=='MANYTOMANYPANEL'){
+                	activate += '/'+id;
+                }else{
+                	activate = $(this).attr("data-activate") + "/" + id;
+                	panelType = "next-panel";
+                }
 
             }else {
 				// If nothing is selected, show unfiltered data in new form
 				label = $(this).attr("data-labelClean");
-				activate = "/show/" + resourceId;
+				if(panelType!='MANYTOMANYPANEL'){
+					activate = "/show/" + resourceId;
+				}
             }
             activator.closest(".nextPopup").hide();
+        }else{
+        	if(resourceId.endsWith('_mtm')){
+				panelType='MANYTOMANYPANEL';
+				activate = "/getInfoMTM/" + resourceId+'/-1';
+			}
         }
 
         //if activator is lookup button, show back button 
         //and set 'data-returnTo' attribute to caller form ID
         if(activator.hasClass("zoomInputs")) {
-            showback = true;
+			showback = true;
             var form = activator.closest("div.standardForms");
-            var activatorColumn = activator.closest("td.inputColumn");
-            
-            zoomName = activatorColumn.find("input[name]").attr("name");
-            returnTo = form.attr("id");
+			
+			var activatorColumn = activator.closest("td.inputColumn");
+		
+			zoomName = activatorColumn.find("input[name]").attr("name");
+			if(!zoomName){
+				zoomName = activator.attr('name');
+			}
+			returnTo = form.attr("id");
+			if(!returnTo){
+				returnTo = activator.attr('data-returnTo');
+			}
         }
 
         //finally, pass data to method that creates forms
@@ -300,7 +330,8 @@
 		//if the form that needs to ne displayed is parent-child form
 		//get containing panels with ajax call to /getInfo/panelName
 		//and get data for each form by envoking standard panel ajax call to server
-		if(panelType == "PARENTCHILDPANEL") {
+		if(panelType == "PARENTCHILDPANEL" )
+		{
 			//get JSON data from server
 			$.getJSON("/getInfo/" + resourceId, function(data) {
 				//Create <div> element for each contained panel
@@ -338,6 +369,201 @@
 		                });
 		            }
                 }              
+            });
+		} else if(panelType == "MANYTOMANYPANEL") {
+			//get JSON data from server
+			$.getJSON(activate, function(data) {
+				//Create <div> element for each contained panel
+				
+				var activate = data.zoomValues[0].activate;
+				var zoomComponent = $(document.createElement("div"));
+				
+				var zoomInput = $(document.createElement("input"));
+				zoomInput.attr("id", activate+"_id");
+				zoomInput.attr("name", activate);
+				zoomInput.attr("type", "text");
+				zoomInput.attr("readonly", "readonly");		
+				zoomInput.attr("style", "width: 83px;");
+				zoomInput.addClass("zoomInputs");
+				if(data.zoomId && data.zoomId!=-1){
+					zoomInput.val(data.zoomId);
+				}
+				
+				var zoomBtn = $(document.createElement("button"));
+				zoomBtn.attr("id", "button-zoom");
+				zoomBtn.attr("name", activate);
+				zoomBtn.attr("type", "button");
+				zoomBtn.attr("data-activate", activate);
+				zoomBtn.attr("data-label", activate);
+				zoomBtn.attr("data-paneltype", "STANDARDPANEL");
+				zoomBtn.attr("data-returnTo", data.panelName);
+				zoomBtn.attr("style","color: #fff; font-weight: bold; width: 30px;");
+				zoomBtn.html("...");
+				zoomBtn.addClass("buttons-blue zoomInputs activator");
+
+				zoomComponent.append(zoomInput);
+				zoomComponent.append(zoomBtn);
+				
+				newWindowBody.append(zoomComponent);
+				
+				//First panel
+				var activate = data.panels[0].activate;
+				var associationEnd = data.panels[0].assoiciation_end;
+				var sourcePanelDiv = $(document.createElement("div"));
+				sourcePanelDiv.attr("id", generateUUID());
+				sourcePanelDiv.addClass("standardForms sourcePanel");
+				sourcePanelDiv.attr("data-activate", "/show/" + activate);
+				sourcePanelDiv.attr("data-assocend", associationEnd);
+				sourcePanelDiv.css({"height": (100/data.panels.length) + "%"});
+				sourcePanelDiv.attr("data-resourceId", activate);
+
+				newWindowBody.append(sourcePanelDiv);
+				loadDataToForm(sourcePanelDiv, true, false);
+				updateBounds(newWindowBody);
+
+				$(".datepicker").datepicker({
+					changeMonth: true,
+					changeYear:  true,
+					dateFormat:  "dd.mm.yy.",
+					yearRange:   "1900:2100"
+				});
+
+				var newHeight = (data.panels.length) * 200;
+				if(newHeight < $("#container").height()) {
+					alert("New New: " + newHeight);
+					newWindow.height(newHeight);
+				}else {
+					newWindow.height("85%");
+					newWindow.css({
+					"top": 60,
+					"left": 20,
+					});
+				}
+				
+				//var transferComponent = $(document.createElement("div"));
+                
+				var transferBtn = $(document.createElement("img"));
+				transferBtn.attr("id", "img-transferConnection");
+				transferBtn.attr("class", "transferConnection toolbarButton");
+				transferBtn.attr("src", "/files/images/icons-white/next-forms.png");
+				transferBtn.attr("style","color: #fff; font-weight: bold; width: 30px; height: 30px;");
+				
+				var removeConnectionBtn = $(document.createElement("img"));
+				removeConnectionBtn.attr("id", "img-removeConnection");
+				removeConnectionBtn.attr("class", "removeConnection toolbarButton");
+				removeConnectionBtn.attr("src", "/files/images/icons-white/delete.png");
+				removeConnectionBtn.attr("style","color: #fff; font-weight: bold; width: 30px; height: 30px;");
+				
+				newWindowBody.append(transferBtn).append(removeConnectionBtn);
+				
+				//newWindowBody.append(transferComponent);
+				
+				//Second panel
+				activate = data.panels[1].activate;
+				var url = "";
+				if(data.zoomId && data.zoomId!=-1){
+					url ="/showWP/" + activate+ "/"+zoomInput.attr('name')+'='+data.zoomId;
+				}else{
+					url ="/show/" + activate;
+				}
+				associationEnd = data.panels[1].assoiciation_end;
+				var destinationPanelDiv = $(document.createElement("div"));
+				destinationPanelDiv.attr("id", generateUUID());
+				destinationPanelDiv.addClass("standardForms destinationPanel");
+				destinationPanelDiv.attr("data-activate", url);
+
+				destinationPanelDiv.attr("data-assocend", associationEnd);
+				destinationPanelDiv.css({"height": (100/data.panels.length) + "%"});
+				destinationPanelDiv.attr("data-resourceId", activate);
+
+				newWindowBody.append(destinationPanelDiv);
+				loadDataToForm(destinationPanelDiv, true, false);
+				updateBounds(newWindowBody);
+
+				$(".datepicker").datepicker({
+					changeMonth: true,
+					changeYear:  true,
+					dateFormat:  "dd.mm.yy.",
+					yearRange:   "1900:2100"
+				});
+
+				newHeight = (data.panels.length) * 200;
+				if(newHeight < $("#container").height()) {
+					alert("New New: " + newHeight);
+					newWindow.height(newHeight);
+				}else {
+					newWindow.height("85%");
+					newWindow.css({
+					"top": 60,
+					"left": 20,
+					});
+				}
+				
+				transferBtn.click(function(e){
+					var selectedRow = sourcePanelDiv.find('tr.selectedTr');
+					if(selectedRow){
+						var selectedVal = selectedRow.find('td[id=idCell]').html();
+						var parentVal = zoomInput.val();
+						if(selectedVal && parentVal){
+							
+							var data = destinationPanelDiv.attr('data-resourceid').substring(0, destinationPanelDiv.attr('data-resourceid').length-3)+"_";
+							data += zoomInput.attr('name').substring(0, zoomInput.attr('name').length-3);
+							data += "="+parentVal;
+							
+							data += "&"+destinationPanelDiv.attr('data-resourceid').substring(0, destinationPanelDiv.attr('data-resourceid').length-3)+"_";
+							data += sourcePanelDiv.attr('data-resourceid').substring(0, sourcePanelDiv.attr('data-resourceid').length-3);
+							data += "="+selectedVal;
+							
+							var form = destinationPanelDiv.find(".inputForm");
+							var act = form.attr('action');
+							var method = form.attr('method');
+			
+							$.ajax({
+								type: method,
+								url: act,
+								data: data,
+								encoding:"UTF-8",
+								contentType: "text/html; charset=UTF-8",
+								success: function (data) {
+									refreshFormData(destinationPanelDiv);
+								},
+								error: function(XMLHttpRequest, textStatus, errorThrown) { 
+									$("#messagePopup").html("<p>" + errorThrown + "</p>");
+									$("#messagePopup").attr("class", "messageError");
+									$("#messagePopup").prepend("<div></div>");
+									$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+								}
+							});
+						}
+						
+					}
+				});
+				
+				removeConnectionBtn.click(function(e){
+					var selectedRow = destinationPanelDiv.find('tr.selectedTr');
+					if(selectedRow){
+						var selectedVal = selectedRow.find('td[id=idCell]').html();
+						var panelName = destinationPanelDiv.attr('data-resourceid');
+						var act = '/delete/'+panelName+'/'+selectedVal;
+						$.ajax({
+								type: 'GET',
+								url: act,
+								encoding:"UTF-8",
+								contentType: "text/html; charset=UTF-8",
+								success: function (data) {
+									refreshFormData(destinationPanelDiv);
+								},
+								error: function(XMLHttpRequest, textStatus, errorThrown) { 
+									$("#messagePopup").html("<p>" + errorThrown + "</p>");
+									$("#messagePopup").attr("class", "messageError");
+									$("#messagePopup").prepend("<div></div>");
+									$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+								}
+							});
+					}
+				});
+				
+              
             });
 		}else {
 			var newStandardForm = $(document.createElement("div"));
@@ -399,29 +625,56 @@
 				syncZoomWithParentTable(form, childForm);
 				if(!childInputForm.is(':visible')) {
 					// if table is visible, fetch filtered content
-					$.ajax({
-	                    url: "/showChildren/" +  childId  + "/" + assocEnd + "/" + rowId,
-	                    type: 'GET',
-	                    encoding:"UTF-8",
-	                    contentType: "text/html; charset=UTF-8",
-	                    success: function(data) {
-	                        childForm.html(data);
-	                        childForm.find("button#btnZoomBack").remove();
-	                        var firstRow = childForm.find(".mainTable tbody tr:first-child");
-	                        if(firstRow.length > 0) {
-	                            firstRow.trigger("click");
-	                        }else {
-	                          childForm.next().find(".tablePanel").empty();
-	                      }
-	                      updateBounds(childForm);
-	                      },
-	                      error: function(XMLHttpRequest, textStatus, errorThrown) { 
-	                        $("#messagePopup").html("<p>" + errorThrown + "</p>");
-	                        $("#messagePopup").attr("class", "messageError");
-	                        $("#messagePopup").prepend("<div></div>");
-	                        $("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
-	                    }
-	                });
+					if(!assocEnd || assocEnd.endsWith('_st')){
+						$.ajax({
+							url: "/showChildren/" +  childId  + "/" + assocEnd + "/" + rowId,
+							type: 'GET',
+							encoding:"UTF-8",
+							contentType: "text/html; charset=UTF-8",
+							success: function(data) {
+								childForm.html(data);
+								childForm.find("button#btnZoomBack").remove();
+								var firstRow = childForm.find(".mainTable tbody tr:first-child");
+								if(firstRow.length > 0) {
+									firstRow.trigger("click");
+								}else {
+								  childForm.next().find(".tablePanel").empty();
+							  }
+							  updateBounds(childForm);
+							  },
+							  error: function(XMLHttpRequest, textStatus, errorThrown) { 
+								$("#messagePopup").html("<p>" + errorThrown + "</p>");
+								$("#messagePopup").attr("class", "messageError");
+								$("#messagePopup").prepend("<div></div>");
+								$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+							}
+						});
+					}else if(assocEnd.endsWith('_mtm')){
+						$.ajax({
+							url: "/showChildrenMTM/" +  childId  + "/" + assocEnd + "/" + rowId,
+							type: 'GET',
+							encoding:"UTF-8",
+							contentType: "text/html; charset=UTF-8",
+							success: function(data) {
+								childForm.html(data);
+								childForm.find("button#btnZoomBack").remove();
+								var firstRow = childForm.find(".mainTable tbody tr:first-child");
+								if(firstRow.length > 0) {
+									firstRow.trigger("click");
+								}else {
+								  childForm.next().find(".tablePanel").empty();
+							  }
+							  updateBounds(childForm);
+							  },
+							  error: function(XMLHttpRequest, textStatus, errorThrown) { 
+								$("#messagePopup").html("<p>" + errorThrown + "</p>");
+								$("#messagePopup").attr("class", "messageError");
+								$("#messagePopup").prepend("<div></div>");
+								$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+							}
+						});
+
+					}
 				}
             }
         }
@@ -736,20 +989,25 @@
             var id = selectedRow.find("#idCell").text();
             var zoomName = window.attr("data-zoomname");
             var returnTo = window.attr("data-returnto");
-            var caller = getForm(returnTo);
-            var callerPanel = caller.attr("data-resourceId");
-            $.getJSON("/getZooms/" + callerPanel + "/" + zoomName + "/" + id, function(data) {
-                for(var i = 0; i < data.zoomValues.length; i++) {
-                    var zoomName = data.zoomValues[i].name;
-                    var zoomValue = data.zoomValues[i].value;
-                    // Get visible input since, one is always hidden, depending on which form is in use (add or edit)
-                    var zoomInput = caller.find("#" + zoomName + ":visible"); 
-                    
-                    // console.log("Menjam     :" + zoomInput.attr("id") + " iz " + zoomInput.closest("form.inputForm").attr("name"));
-                    // console.log(zoomInput.val() + " --> " + zoomValue);
-                    zoomInput.val(zoomValue);
-                }
-            });
+			if(!returnTo.endsWith('_mtm')){
+				var caller = getForm(returnTo);
+				var callerPanel = caller.attr("data-resourceId");
+				$.getJSON("/getZooms/" + callerPanel + "/" + zoomName + "/" + id, function(data) {
+					for(var i = 0; i < data.zoomValues.length; i++) {
+						var zoomName = data.zoomValues[i].name;
+						var zoomValue = data.zoomValues[i].value;
+						// Get visible input since, one is always hidden, depending on which form is in use (add or edit)
+						var zoomInput = caller.find("#" + zoomName + ":visible"); 
+						
+						// console.log("Menjam     :" + zoomInput.attr("id") + " iz " + zoomInput.closest("form.inputForm").attr("name"));
+						// console.log(zoomInput.val() + " --> " + zoomValue);
+						zoomInput.val(zoomValue);
+					}
+				});
+			}else{
+				var zoomInput = $("#" + zoomName +"_id" + ":visible"); 
+				zoomInput.val(id);
+			}
         }
     });
 
@@ -760,6 +1018,42 @@
 		var text = $(this).attr("data-confirmText");
 		var form = $(this.closest(".standardForms"));
 		showConfirmDialog(name, link, text, form);
+	});
+	
+	container.on("click", ".printReportButton", function(e){
+		var tableDiv = $(this).closest('.standardForms').find('.tableDiv');
+		var selectedRow = tableDiv.find(".mainTable tbody tr.selectedTr");
+		
+		if(selectedRow.length > 0) {
+                var id = selectedRow.find("#idCell").text();
+				var resourceid =  selectedRow.find('td')[1].textContent;					
+				var link = "printForm?names=*&resource=" + resourceid;
+				$.ajax({
+					url: link,
+					type: 'GET',
+					encoding:"UTF-8",
+					contentType: "text/html; charset=UTF-8",
+					success: function(data) {
+						console.log("RESPONSE: " + data)
+						$("#messagePopup").html(data);
+						var clas = $("#messagePopup").find("p").attr("data-cssClass");
+						$("#messagePopup").attr("class", clas);
+						$("#messagePopup").prepend("<div></div>");
+						$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+						var pdfURI = ""
+						window.open('/static/' + resourceid + '.pdf', '_blank');
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) { 
+						$("#messagePopup").html("<p>" + errorThrown + "</p>");
+						$("#messagePopup").attr("class", "messageError");
+						$("#messagePopup").prepend("<div></div>");
+						$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+					}
+				});
+					
+		} else {
+			alert("Please select one row to print.")
+		}
 	});
 
 	/**************************************************************************************************************************
@@ -956,7 +1250,7 @@
 	            }
 	            loadDataToForm(form, showTitle, showback);
 	            $(this).fadeIn("fast", function(e) {
-	               if(form.next().length > 0) {
+	               if(form.next().length > 0 && form.next().hasClass('standardForms')) {
 	                    refreshFormData(form.next());
 	                }
 	            });

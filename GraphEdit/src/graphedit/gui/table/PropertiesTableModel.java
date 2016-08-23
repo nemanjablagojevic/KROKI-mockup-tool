@@ -311,7 +311,10 @@ public class PropertiesTableModel extends AbstractTableModel implements Observer
 		if (MainFrame.getInstance().getAppMode() != ApplicationMode.USER_INTERFACE)
 			return true;
 		Link link =  selectionModel.getSelectedLink();
-		if (link.getSourceConnector().getRepresentedElement().element().getProperty(GraphElementProperties.STEREOTYPE).equals(ClassStereotypeUI.PARENT_CHILD.toString()) || link.getDestinationConnector().getRepresentedElement().element().getProperty(GraphElementProperties.STEREOTYPE).equals(ClassStereotypeUI.PARENT_CHILD.toString()))
+		if (link.getSourceConnector().getRepresentedElement().element().getProperty(GraphElementProperties.STEREOTYPE).equals(ClassStereotypeUI.PARENT_CHILD.toString()) 
+				|| link.getDestinationConnector().getRepresentedElement().element().getProperty(GraphElementProperties.STEREOTYPE).equals(ClassStereotypeUI.PARENT_CHILD.toString()) 
+				|| link.getSourceConnector().getRepresentedElement().element().getProperty(GraphElementProperties.STEREOTYPE).equals(ClassStereotypeUI.MANY_TO_MANY.toString()) 
+				|| link.getDestinationConnector().getRepresentedElement().element().getProperty(GraphElementProperties.STEREOTYPE).equals(ClassStereotypeUI.MANY_TO_MANY.toString()))
 			return cardinality.endsWith("1");
 		else
 			return cardinality.endsWith("*") || cardinality.endsWith("1"); 

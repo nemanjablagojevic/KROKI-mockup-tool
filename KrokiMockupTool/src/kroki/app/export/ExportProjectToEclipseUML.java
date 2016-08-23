@@ -999,7 +999,9 @@ public class ExportProjectToEclipseUML extends ProgressWorker implements IOutput
 					groupElements=((ElementsGroup)visibleElement).getVisibleElementList();
 					for(VisibleElement groupElement:groupElements)
 					{
-						refrencedOperations.add((Operation) propertiesMap.get(groupElement));
+						if(propertiesMap.get(groupElement) !=null && propertiesMap.get(groupElement) instanceof Operation){
+							refrencedOperations.add((Operation) propertiesMap.get(groupElement));
+						}
 					}
 					OperationStereotype.setStereotypeElementsGroupOperationNestedElements(stereotypeProfile, mapOperation, refrencedOperations, this);
 					removeIndentation(1);

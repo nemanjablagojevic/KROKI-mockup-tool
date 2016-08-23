@@ -41,11 +41,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.antlr.v4.runtime.ANTLRFileStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.ArrayUtils;
-
 import kroki.app.KrokiMockupToolApp;
 import kroki.app.action.OpenProjectAction;
 import kroki.app.action.RedoAction;//poziv za redo akciju
@@ -66,16 +61,23 @@ import kroki.profil.operation.Report;
 import kroki.profil.operation.Transaction;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.panel.mode.OperationMode;
 import kroki.profil.panel.mode.ViewMode;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.subsystem.BussinesSubsystem;
 import kroki.profil.utils.ElementsGroupUtil;
+import kroki.profil.utils.ManyToManyUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.StandardPanelUtil;
 import kroki.profil.utils.UIPropertyUtil;
 import kroki.uml_core_basic.UmlPackage;
+
+import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.ArrayUtils;
 
 /**
  * GUI component that simulates console behavior
@@ -407,6 +409,7 @@ public class CommandPanel extends JPanel {
 		tempTabHelpOption.add("help make package");
 		tempTabHelpOption.add("help make std-panel");
 		tempTabHelpOption.add("help make parent child panel");
+		tempTabHelpOption.add("help make many to many panel");
 		tempTabHelpOption.add("help make combozoom");
 		tempTabHelpOption.add("help make hierarchy");
 		tempTabHelpOption.add("help rename project");// Project
@@ -1332,6 +1335,9 @@ public class CommandPanel extends JPanel {
 		} else if(command.startsWith("make parent-child panel")) {
 			ret = makeParentChildPanelCommand(command);
 			
+		} else if(command.startsWith("make many-to-many panel")) {
+			ret = makeManyToManyPanelCommand(command);
+			
 		} else if (command.startsWith("make component")){
 			 ret = addComponentToPanel(command);
 			
@@ -1538,6 +1544,40 @@ public class CommandPanel extends JPanel {
 		return "Error parsing command. Check your syntax!";
 		
 	}
+	
+	public String makeManyToManyPanelCommand(String command){
+		Pattern patt = Pattern.compile("[\"']([^\"']+)[\"'] in [\"']([^\"']+)[\"'](?: \\{(.+?)\\})?");
+		String panel;
+		String pack;
+		String components;
+		Matcher matcher = patt.matcher(command);
+		if (matcher.find()) {
+			if (matcher.groupCount() > 0) {
+				panel = matcher.group(1);
+				pack = matcher.group(2);				
+				components = matcher.group(3);
+				
+				BussinesSubsystem owner = getOwnerPackage(pack);
+				VisibleClass pa = KrokiMockupToolApp.getInstance().checkPanel(panel, owner);
+				
+				if (pa == null) {
+					if (components != null) {
+						String[] comps = components.split(";");
+						makeManyToManyPanel(owner, panel, comps);
+					} else {
+						makeManyToManyPanel(owner, panel, null);
+					}
+					
+					return "Many to many panel \"" + panel + "\" created successfully in \"" + pack +  "\"";
+				} else {
+					return "Panel with specified name already exists";
+				}
+			}
+		}
+		
+		return "Error parsing command. Check your syntax!";
+		
+	}
 
 	public String renameElement(String command){
 		Pattern patt = Pattern.compile("[\"']([^\"']+)[\"'](?: \\{(.+?)\\})? to [\"']([^\"']+)[\"']");
@@ -1711,6 +1751,48 @@ public class CommandPanel extends JPanel {
 	public VisibleClass makeParentChildPanel(BussinesSubsystem owner, String label, String[] componets){
 		VisibleClass panel = new ParentChild();
 		ParentChildUtil.defaultGuiSettings((ParentChild) panel);
+		//NamingUtil cc = new NamingUtil();
+		panel.setLabel(label);
+		panel.getComponent().setName(label);		
+		ElementsGroup eg = (ElementsGroup) panel.getVisibleElementList().get(1);
+		((Composite) eg.getComponent()).setLayoutManager(new VerticalLayoutManager());
+		((Composite) eg.getComponent()).layout();
+		eg.update();
+		panel.update();
+		owner.addOwnedType(panel);
+		
+		KrokiMockupToolApp.getInstance().getKrokiMockupToolFrame().getTree().updateUI();
+		KrokiMockupToolApp.getInstance().getTabbedPaneController().openTab(panel);
+		
+		if (componets != null){
+			for (int i=0; i < componets.length; i++) {
+				String c = componets[i];
+				String[] data = c.trim().split("-");
+				
+				String probLabel = data[1];
+				String type = data[0];
+				
+				/**
+				 * 
+				 * ovo nije potrebno, samo hierarhija treba //hierarchy // mandatory
+				 */
+				
+				if (type.equalsIgnoreCase("hierachy")) {
+				//makeVisibleParentChildElemet(probLabel, type, true, ComponentType., panel, 0);
+				} else if (type.equalsIgnoreCase("textarea")) {
+					makeVisibleProperty(probLabel, type, true, ComponentType.TEXT_AREA, panel, 0);
+				}			
+			}
+		}
+		
+		
+		return panel;
+		
+	}
+	
+	public VisibleClass makeManyToManyPanel(BussinesSubsystem owner, String label, String[] componets){
+		VisibleClass panel = new ParentChild();
+		ManyToManyUtil.defaultGuiSettings((ManyToMany) panel);
 		//NamingUtil cc = new NamingUtil();
 		panel.setLabel(label);
 		panel.getComponent().setName(label);		

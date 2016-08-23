@@ -31,11 +31,13 @@ import kroki.profil.association.VisibleAssociationEnd;
 import kroki.profil.association.Zoom;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.panel.mode.OperationMode;
 import kroki.profil.panel.mode.ViewMode;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.utils.HierarchyUtil;
+import kroki.profil.utils.ManyToManyUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.VisibleClassUtil;
 import net.miginfocom.swing.MigLayout;
@@ -502,12 +504,21 @@ public class VisibleAssociationEndSettings extends VisibleElementSettings {
 						if (visibleElement instanceof Hierarchy){
 							if (visibleAssociationEnd.getTargetPanel() != selected){
 								Hierarchy h = (Hierarchy)visibleElement;
-								ParentChild panel = (ParentChild)h.getActivationPanel(); 
-								ParentChildUtil.updateTargetPanel(panel, h, (VisibleClass) selected);
-								if (h.getLevel() == 2 && h.getViaAssociationEnd() == null){
-									List<VisibleAssociationEnd> ends = ParentChildUtil.possibleAssociationEnds(panel, h);
-									if (ends.size() == 1)
-										h.setViaAssociationEnd(ends.get(0));
+								VisibleClass panel = h.getActivationPanel(); 
+								if(panel instanceof ParentChild){
+									ParentChildUtil.updateTargetPanel((ParentChild)panel, h, (VisibleClass) selected);
+									if (h.getLevel() == 2 && h.getViaAssociationEnd() == null){
+										List<VisibleAssociationEnd> ends = ParentChildUtil.possibleAssociationEnds((ParentChild)panel, h);
+										if (ends.size() == 1)
+											h.setViaAssociationEnd(ends.get(0));
+									}
+								} if(panel instanceof ManyToMany){
+									ManyToManyUtil.updateTargetPanel((ManyToMany)panel, h, (VisibleClass) selected);
+									if (h.getLevel() == 2 && h.getViaAssociationEnd() == null){
+										List<VisibleAssociationEnd> ends = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, h);
+										if (ends.size() == 1)
+											h.setViaAssociationEnd(ends.get(0));
+									}
 								}
 							}
 							

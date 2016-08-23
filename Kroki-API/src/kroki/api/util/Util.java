@@ -1,7 +1,9 @@
 package kroki.api.util;
 
+import kroki.profil.panel.ParameterPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 
 /**
@@ -12,8 +14,12 @@ import kroki.profil.panel.container.ParentChild;
 public class Util {
 
 	
+	public static final int PARAMETER_PANEL_PROPERTIES = 3;
+	public static final int MANY_TO_MANY_PANEL_PROPERTIES = 2;
 	public static final int STANDARD_PANEL_PROPERTIES = 1;
 	public static final int PARENTCHILD_PANEL_PROPERTIES = 0;
+	public static final int PARAMETER_PANEL_OPERATIONS = 4;
+	public static final int MANY_TO_MANY_PANEL_OPERATIONS = 3;
 	public static final int STANDARD_PANEL_OPERATIONS = 2;
 	public static final int PARENTCHILD_PANEL_OPERATIONS = 1;
 	
@@ -27,6 +33,10 @@ public class Util {
 			return STANDARD_PANEL_PROPERTIES;
 		if (panel instanceof ParentChild)
 			return PARENTCHILD_PANEL_PROPERTIES;
+		if (panel instanceof ManyToMany)
+			return MANY_TO_MANY_PANEL_PROPERTIES;
+		if (panel instanceof ParameterPanel)
+			return PARAMETER_PANEL_PROPERTIES;
 		return -1; 
 	}
 	
@@ -40,6 +50,10 @@ public class Util {
 			return STANDARD_PANEL_OPERATIONS;
 		if (panel instanceof ParentChild)
 			return PARENTCHILD_PANEL_OPERATIONS;
+		if (panel instanceof ManyToMany)
+			return MANY_TO_MANY_PANEL_OPERATIONS;
+		if (panel instanceof ParameterPanel)
+			return PARAMETER_PANEL_OPERATIONS;
 		return -1; 
 	}
 }

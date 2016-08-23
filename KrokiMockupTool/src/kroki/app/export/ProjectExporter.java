@@ -34,8 +34,10 @@ import kroki.commons.camelcase.NamingUtil;
 import kroki.profil.ComponentType;
 import kroki.profil.VisibleElement;
 import kroki.profil.association.Zoom;
+import kroki.profil.panel.ParameterPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.property.Calculated;
 import kroki.profil.property.VisibleProperty;
@@ -228,7 +230,16 @@ public class ProjectExporter {
 			}
 		} else if (el instanceof ParentChild) {
 			getParentChildData(el, menu, subMenuNew);
-		}
+		} else if (el instanceof ManyToMany){
+			getManyToManyData(el, menu, subMenuNew);
+		} 
+//		else if (el instanceof ParameterPanel) {
+//			try {
+//				getParameterPanelData(el, classPackage, menu, subMenuNew);
+//			} catch (NoZoomPanelException e) {
+//				throw new NoZoomPanelException(e.getMessage());
+//			}
+//		}
 		// after data fetching is done, put current element in elements list
 		elements.add(el);
 	}
@@ -353,6 +364,116 @@ public class ProjectExporter {
 			subMenuTemp.setParent(rootMenu);
 		}
 	}
+	
+	public void getParameterPanelData(VisibleElement el, String classPackage, Menu menu,
+			kroki.app.menu.Submenu subMenuNew) throws NoZoomPanelException {
+		ParameterPanel pp = (ParameterPanel) el;
+		VisibleClass vc = (VisibleClass) el;
+
+		// EJB CLASS ATTRIBUTE LISTS
+		ArrayList<EJBAttribute> attributes = new ArrayList<EJBAttribute>();
+
+		// CONSTRAINTS
+		ArrayList<Constraint> constraints = new ArrayList<Constraint>();
+		List<tudresden.ocl20.pivot.pivotmodel.Constraint> consDres = new ArrayList<tudresden.ocl20.pivot.pivotmodel.Constraint>();
+		List<String> importedPackages = new ArrayList<String>();
+		importedPackages.add("import adapt.exceptions.InvariantException;");
+
+		// DATA USED FOR EJB CLASS GENERATION
+		// for each panel element, one EJB attribute object is created and added
+		// to attributes list for that panel
+		for (VisibleElement element : pp.getVisibleElementList()) {
+			if (element instanceof VisibleProperty) {
+				VisibleProperty vp = (VisibleProperty) element;
+				EJBAttribute attribute = getVisiblePropertyData(vp);
+				attributes.add(attribute);
+				if (element instanceof Calculated) {
+					String expression = ((Calculated) element).getExpression();
+					try {
+						consDres = Ocl22Parser.INSTANCE.parseOclString(expression, model);
+					} catch (tudresden.ocl20.pivot.parser.ParseException e) {
+						e.printStackTrace();
+					}
+				}
+			} else if (element instanceof Zoom) {
+				Zoom z = (Zoom) element;
+				EJBAttribute attribute = getZoomData(z, pp.getPersistentClass().name());
+				if (attribute != null) {
+					attributes.add(attribute);
+				} else {
+					KrokiMockupToolApp.getInstance().displayTextOutput("Target panel not set for combozoom '"
+							+ z.getLabel() + "' in '" + vc.getLabel() + "'. Skipping that file.", 3);
+					throw new NoZoomPanelException("Target panel not set for combozoom '" + z.getLabel() + "' in '"
+							+ vc.getLabel() + "'. Skipping that file.");
+				}
+			}
+		}
+
+		String tableName = cc.toDatabaseFormat(this.project.getLabel(), pp.getLabel());
+
+		String sys = cc.toCamelCase(project.getLabel(), true);
+		if (menu != null) {
+			sys = cc.toCamelCase(menu.getLabel(), true);
+		}
+
+		if (subMenuNew != null) {
+			sys = cc.toCamelCase(subMenuNew.getName(), true);
+		}
+		ConstraintAnalyzer ca = null;
+		if (consDres != null && !consDres.isEmpty()) {
+			ca = new ConstraintAnalyzer(consDres.get(0), importedPackages);
+			constraints.add(ca.process());
+		}
+
+		// EJB class instance for panel is created and passed to generator
+		String pack = "ejb";
+		if (!swing) {
+			pack = "ejb_generated";
+		}
+		EJBClass ejb = new EJBClass(pack, sys, pp.getPersistentClass().name(), tableName, pp.getLabel(), attributes,
+				constraints);
+		ejb.setImportedPackages(importedPackages);
+		System.out.println("DODAJEM KLASU: " + ejb.getName());
+		classes.add(ejb);
+
+		// SUBMENU GENERATION DATA
+		// each panel get it's own menu item
+		String activate = ejb.getName().toLowerCase() + "_pp";
+		String label = ejb.getLabel();
+		String panel_type = "parameter-panel";
+		/*
+		 * if(!swing) { activate = "/resources/" + ejb.getName(); }
+		 */
+		Submenu sub = new Submenu(activate, label, panel_type);
+		// if it is in a subsystem, it is added as sub-menu item
+
+		/****************************** NEW PART ******************************/
+		kroki.app.generators.utils.Submenu subOld = new kroki.app.generators.utils.Submenu(activate, label, panel_type);
+		MenuItem menuItem = new MenuItem();
+		menuItem.setActivate(activate);
+		menuItem.setFormName(label);
+		menuItem.setMenuName(label);
+		menuItem.setPanelType(panel_type);
+		/********************************************************************/
+		if (menu != null) {
+			menu.addSubmenu(sub);
+
+			// New
+			subMenuNew.getChildren().add(menuItem);
+			menuItem.setParent(subMenuNew);
+		} else {
+			// if panel is in root of workspace, it gets it's item in main menu
+			Menu men = new Menu("menu" + activate, label, new ArrayList<Submenu>(), new ArrayList<Menu>());
+			men.addSubmenu(sub);
+			menus.add(men);
+
+			kroki.app.menu.Submenu subMenuTemp = new kroki.app.menu.Submenu(label);
+			subMenuTemp.getChildren().add(menuItem);
+			menuItem.setParent(subMenuTemp);
+			rootMenu.getChildren().add(subMenuTemp);
+			subMenuTemp.setParent(rootMenu);
+		}
+	}
 
 	/**
 	 * Method used to collect the data from parent-child panels
@@ -377,6 +498,40 @@ public class ProjectExporter {
 		 * false) + ":"; } panel_type = panel_type.substring(0,
 		 * panel_type.length()-1) + "]"; }
 		 */
+		Submenu sub = new Submenu(activate, label, panel_type);
+		/****************************** NEW PART ******************************/
+		MenuItem menuItem = new MenuItem();
+		menuItem.setActivate(activate);
+		menuItem.setFormName(label);
+		menuItem.setMenuName(label);
+		menuItem.setPanelType(panel_type);
+		/********************************************************************/
+
+		if (menu != null) {
+			menu.addSubmenu(sub);
+
+			// New
+			subMenuNew.getChildren().add(menuItem);
+			menuItem.setParent(subMenuNew);
+		} else {
+			Menu men = new Menu("menu" + activate, label, new ArrayList<Submenu>(), new ArrayList<Menu>());
+			men.addSubmenu(sub);
+			menus.add(men);
+
+			kroki.app.menu.Submenu subMenuTemp = new kroki.app.menu.Submenu(label);
+			subMenuTemp.getChildren().add(menuItem);
+			menuItem.setParent(subMenuTemp);
+			rootMenu.getChildren().add(subMenuTemp);
+			subMenuTemp.setParent(rootMenu);
+		}
+	}
+	
+	public void getManyToManyData(VisibleElement el, Menu menu, kroki.app.menu.Submenu subMenuNew) {
+		ManyToMany pcPanel = (ManyToMany) el;
+		String activate = cc.toCamelCase(pcPanel.name(), false) + "_mtm";
+		String label = pcPanel.getLabel();
+		String panel_type = "many-to-many";
+
 		Submenu sub = new Submenu(activate, label, panel_type);
 		/****************************** NEW PART ******************************/
 		MenuItem menuItem = new MenuItem();

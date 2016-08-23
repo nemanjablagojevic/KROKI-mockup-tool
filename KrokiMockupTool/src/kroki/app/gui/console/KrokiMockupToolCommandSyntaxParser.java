@@ -20,7 +20,7 @@ public class KrokiMockupToolCommandSyntaxParser extends Parser {
 		new PredictionContextCache();
 	public static final int
 		T__3=1, T__2=2, T__1=3, T__0=4, NUMBER=5, LETTER=6, WHITESPACE=7, ELEMENTNAME=8, 
-		MAKEPROJECT=9, MAKEPACKAGE=10, MAKESTDPANEL=11, MAKEPARENTCHILDPANEL=12, 
+		MAKEPROJECT=9, MAKEPACKAGE=10, MAKESTDPANEL=11, MAKEPARENTCHILDPANEL=12,MAKEMANYTOMANYPANEL=66, 
 		MAKECOMBOZOOM=13, MAKEHIERARCHY=14, MAKECOMPONENT=15, IN=16, LBRAKET=17, 
 		TRUEFALSE=18, ORIENTATIONELEMENT=19, ALIGNMENTELEMENT=20, TEXTFIELDDATATYPE=21, 
 		PERSISTENTTYPES=22, DEFAULTVIEWMODES=23, DEFAULTOPERATIONMODES=24, COLON=25, 
@@ -42,10 +42,10 @@ public class KrokiMockupToolCommandSyntaxParser extends Parser {
 	public static final int
 		RULE_makeCommand = 0, RULE_makeProject = 1, RULE_makePackage = 2, RULE_makeStdPanel = 3, 
 		RULE_makeComponent = 4, RULE_makeParentChildPanel = 5, RULE_makeCombozoom = 6, 
-		RULE_makeHierarchy = 7;
+		RULE_makeHierarchy = 7, RULE_makeManyToManyPanel = 8;
 	public static final String[] ruleNames = {
 		"makeCommand", "makeProject", "makePackage", "makeStdPanel", "makeComponent", 
-		"makeParentChildPanel", "makeCombozoom", "makeHierarchy"
+		"makeParentChildPanel","makeManyToManyPanel", "makeCombozoom", "makeHierarchy"
 	};
 
 	@Override
@@ -92,6 +92,9 @@ public class KrokiMockupToolCommandSyntaxParser extends Parser {
 		public MakeParentChildPanelContext makeParentChildPanel(int i) {
 			return getRuleContext(MakeParentChildPanelContext.class,i);
 		}
+		public MakeManyToManyPanelContext makeManyToManyPanel(int i) {
+			return getRuleContext(MakeManyToManyPanelContext.class,i);
+		}		
 		public MakeProjectContext makeProject(int i) {
 			return getRuleContext(MakeProjectContext.class,i);
 		}
@@ -103,6 +106,9 @@ public class KrokiMockupToolCommandSyntaxParser extends Parser {
 		}
 		public List<MakeParentChildPanelContext> makeParentChildPanel() {
 			return getRuleContexts(MakeParentChildPanelContext.class);
+		}
+		public List<MakeManyToManyPanelContext> makeManyToMantPanel() {
+			return getRuleContexts(MakeManyToManyPanelContext.class);
 		}
 		public List<MakeComponentContext> makeComponent() {
 			return getRuleContexts(MakeComponentContext.class);
@@ -173,6 +179,11 @@ public class KrokiMockupToolCommandSyntaxParser extends Parser {
 					setState(22); makeHierarchy();
 					}
 					break;
+				case MAKEMANYTOMANYPANEL:
+					{
+					setState(23); makeManyToManyPanel();
+					}
+					break;
 				default:
 					throw new NoViableAltException(this);
 				}
@@ -180,7 +191,7 @@ public class KrokiMockupToolCommandSyntaxParser extends Parser {
 				setState(25); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << MAKEPROJECT) | (1L << MAKEPACKAGE) | (1L << MAKESTDPANEL) | (1L << MAKEPARENTCHILDPANEL) | (1L << MAKECOMBOZOOM) | (1L << MAKEHIERARCHY) | (1L << MAKECOMPONENT))) != 0) );
+			} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << MAKEPROJECT) | (1L << MAKEPACKAGE) | (1L << MAKESTDPANEL) | (1L << MAKEPARENTCHILDPANEL)  | (1L << MAKEMANYTOMANYPANEL) | (1L << MAKECOMBOZOOM) | (1L << MAKEHIERARCHY) | (1L << MAKECOMPONENT))) != 0) );
 			}
 		}
 		catch (RecognitionException re) {
@@ -505,6 +516,32 @@ public class KrokiMockupToolCommandSyntaxParser extends Parser {
 			if ( listener instanceof KrokiMockupToolCommandSyntaxListener ) ((KrokiMockupToolCommandSyntaxListener)listener).exitMakeParentChildPanel(this);
 		}
 	}
+	
+	public static class MakeManyToManyPanelContext extends ParserRuleContext {
+		public TerminalNode MAKEMANYTOMANYPANEL() { return getToken(KrokiMockupToolCommandSyntaxParser.MAKEMANYTOMANYPANEL, 0); }
+		public List<TerminalNode> HIERARCHYCOMPONENT() { return getTokens(KrokiMockupToolCommandSyntaxParser.HIERARCHYCOMPONENT); }
+		public List<TerminalNode> ELEMENTNAME() { return getTokens(KrokiMockupToolCommandSyntaxParser.ELEMENTNAME); }
+		public TerminalNode ELEMENTNAME(int i) {
+			return getToken(KrokiMockupToolCommandSyntaxParser.ELEMENTNAME, i);
+		}
+		public TerminalNode LBRAKET() { return getToken(KrokiMockupToolCommandSyntaxParser.LBRAKET, 0); }
+		public TerminalNode HIERARCHYCOMPONENT(int i) {
+			return getToken(KrokiMockupToolCommandSyntaxParser.HIERARCHYCOMPONENT, i);
+		}
+		public TerminalNode IN() { return getToken(KrokiMockupToolCommandSyntaxParser.IN, 0); }
+		public MakeManyToManyPanelContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_makeManyToManyPanel; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof KrokiMockupToolCommandSyntaxListener ) ((KrokiMockupToolCommandSyntaxListener)listener).enterMakeManyToManyPanel(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof KrokiMockupToolCommandSyntaxListener ) ((KrokiMockupToolCommandSyntaxListener)listener).exitMakeManyToManyPanel(this);
+		}
+	}
 
 	public final MakeParentChildPanelContext makeParentChildPanel() throws RecognitionException {
 		MakeParentChildPanelContext _localctx = new MakeParentChildPanelContext(_ctx, getState());
@@ -514,6 +551,77 @@ public class KrokiMockupToolCommandSyntaxParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(91); match(MAKEPARENTCHILDPANEL);
+			setState(92); match(T__2);
+			setState(93); match(ELEMENTNAME);
+			setState(94); match(T__2);
+			setState(95); match(IN);
+			setState(96); match(ELEMENTNAME);
+			setState(99); 
+			_errHandler.sync(this);
+			_la = _input.LA(1);
+			do {
+				{
+				{
+				setState(97); match(T__3);
+				setState(98); match(ELEMENTNAME);
+				}
+				}
+				setState(101); 
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+			} while ( _la==T__3 );
+			setState(103); match(T__2);
+			setState(114);
+			_la = _input.LA(1);
+			if (_la==LBRAKET) {
+				{
+				setState(104); match(LBRAKET);
+				setState(109); 
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				do {
+					{
+					{
+					setState(105); match(HIERARCHYCOMPONENT);
+					setState(107);
+					_la = _input.LA(1);
+					if (_la==T__1) {
+						{
+						setState(106); match(T__1);
+						}
+					}
+
+					}
+					}
+					setState(111); 
+					_errHandler.sync(this);
+					_la = _input.LA(1);
+				} while ( _la==HIERARCHYCOMPONENT );
+				setState(113); match(T__0);
+				}
+			}
+
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+	
+	public final MakeManyToManyPanelContext makeManyToManyPanel() throws RecognitionException {
+		MakeManyToManyPanelContext _localctx = new MakeManyToManyPanelContext(_ctx, getState());
+		enterRule(_localctx, 10, RULE_makeManyToManyPanel);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(91); match(MAKEMANYTOMANYPANEL);
 			setState(92); match(T__2);
 			setState(93); match(ELEMENTNAME);
 			setState(94); match(T__2);

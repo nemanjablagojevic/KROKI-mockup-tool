@@ -4,9 +4,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import adapt.model.ejb.EntityBean;
+import adapt.model.panel.configuration.Zoom;
+
 public class AdaptManyToManyPanel extends AdaptPanel {
 
+	protected EntityBean entityBean;
 	protected List<AdaptStandardPanel> panels = new ArrayList<AdaptStandardPanel>();
+	protected Zoom zoom = new Zoom();
 	
 	public void add(AdaptStandardPanel spanel) {
 		panels.add(spanel);
@@ -30,4 +35,23 @@ public class AdaptManyToManyPanel extends AdaptPanel {
 	public void setPanels(List<AdaptStandardPanel> panels) {
 		this.panels = panels;
 	}
+
+	public Zoom getZoom() {
+		return zoom;
+	}
+
+	public void setZoom(Zoom zoom) {
+		this.zoom = zoom;
+	}
+
+	public EntityBean getEntityBean() {
+		return entityBean;
+	}
+
+	public void setEntityBean(EntityBean entityBean) {
+		this.entityBean = entityBean;
+	}
+	
+	
+	
 }

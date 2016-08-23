@@ -20,11 +20,17 @@ import javax.swing.JTextField;
 import kroki.app.KrokiMockupToolApp;
 import kroki.app.utils.StringResource;
 import kroki.commons.camelcase.NamingUtil;
+import kroki.profil.panel.ParameterPanel;
+import kroki.profil.panel.ReportPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.subsystem.BussinesSubsystem;
+import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.ParameterPanelUtil;
 import kroki.profil.utils.ParentChildUtil;
+import kroki.profil.utils.ReportPanelUtil;
 import kroki.profil.utils.StandardPanelUtil;
 import kroki.uml_core_basic.UmlPackage;
 import net.miginfocom.swing.MigLayout;
@@ -52,7 +58,7 @@ public class NewFileDialog extends JDialog {
 
     public enum FileType {
 
-        STANDARD_PANEL, PARENT_CHILD_PANEL;
+        STANDARD_PANEL, PARENT_CHILD_PANEL, MANY_TO_MANY_PANEL, REPORT_PANEL;
 
         @Override
         public String toString() {
@@ -160,7 +166,17 @@ public class NewFileDialog extends JDialog {
             } else if (fileTypeCb.getSelectedItem() == FileType.PARENT_CHILD_PANEL) {
                 visibleClass = new ParentChild();
                 ParentChildUtil.defaultGuiSettings((ParentChild)visibleClass);
-            }
+            } else if (fileTypeCb.getSelectedItem() == FileType.MANY_TO_MANY_PANEL) {
+                visibleClass = new ManyToMany();
+                ManyToManyUtil.defaultGuiSettings((ManyToMany)visibleClass);
+            } else if (fileTypeCb.getSelectedItem() == FileType.REPORT_PANEL){
+            	visibleClass = new ReportPanel();
+                ReportPanelUtil.defaultGuiSettings((ReportPanel)visibleClass);
+            } 
+//            else if (fileTypeCb.getSelectedItem() == FileType.PARAMETER_PANEL){
+//            	visibleClass = new ParameterPanel();
+//                ParameterPanelUtil.defaultGuiSettings((ParameterPanel)visibleClass);
+//            }
             visibleClass.setLabel(nameTf.getText());
             visibleClass.getComponent().setName(nameTf.getText());
             if(visibleClass instanceof StandardPanel) {

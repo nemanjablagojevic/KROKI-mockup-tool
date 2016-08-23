@@ -47,15 +47,12 @@ public class RemoveCommand implements Command {
 			groupIndexes.add(elementsGroup.getVisibleElementList().indexOf(visibleElement));
 		}
 
-		ParentChild panel = null;
 		List<Hierarchy> currentSuccessors = new ArrayList<Hierarchy>();
 		this.visibleElementList.removeAll(hierarchies);
 
 		for (Hierarchy hierarchy : hierarchies){
 			//delete hierarchy and all successors
 
-			if (panel == null)
-				panel = (ParentChild)hierarchy.umlClass();
 			currentSuccessors.clear();
 			currentSuccessors = HierarchyUtil.allSuccessors(hierarchy);
 			currentSuccessors.add(0,hierarchy);

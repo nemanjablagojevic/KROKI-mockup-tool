@@ -1,6 +1,5 @@
 package adapt.util.xml_readers;
 
-import java.awt.Label;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -23,6 +22,7 @@ import adapt.model.ejb.EntityBean;
 import adapt.model.ejb.JoinColumnAttribute;
 import adapt.model.panel.AdaptManyToManyPanel;
 import adapt.model.panel.AdaptPanel;
+import adapt.model.panel.AdaptParameterPanel;
 import adapt.model.panel.AdaptParentChildPanel;
 import adapt.model.panel.AdaptStandardPanel;
 import adapt.model.panel.configuration.DataSettings;
@@ -82,7 +82,6 @@ public class PanelReader {
 		}else {
 			try {
 				Document document = XMLParserUtils.parseXml(panelsDirectoryPath + panelsFileName);
-				
 				switch (type) {
 				case STANDARDPANEL:
 					AppCache.displayTextOnMainFrame(logPrefix + " Fetching standard panel data for: " + panelId, 0);
@@ -99,8 +98,16 @@ public class PanelReader {
 					panel = findParentChildPanel(document, panelId);
 					break;
 				case MANYTOMANYPANEL:
-					AppCache.displayTextOnMainFrame(logPrefix + " Fetching many to many panel data for: " + panelId, 0);
+					AppCache.displayTextOnMainFrame(logPrefix + " Fetching many-to-many panel data for: " + panelId, 0);
 					panel = findManyToManyPanel(document, panelId);
+					break;
+				case PARAMETERPANEL:
+					AppCache.displayTextOnMainFrame(logPrefix + " Fetching parameter panel data for: " + panelId, 0);
+					if(openedAs.equals(OpenedAs.NEXT)) {
+						panel = findNextPanel(document, panelId, type, openedId);
+					}else {
+						panel = findParameterPanel(document, panelId);
+					}
 					break;
 				}
 			} catch (Exception e) {
@@ -119,6 +126,7 @@ public class PanelReader {
 			id = stdPanelElement.getAttribute(Tags.ID);
 			if(id.equals(panelId)) {
 				String ejbRef = stdPanelElement.getAttribute(Tags.EJB_REF);
+				String reportPanel = stdPanelElement.getAttribute(Tags.REPORT_PANEL);
 				EntityBean bean = EntityReader.load(ejbRef) ;
 				if(bean == null) {
 					return null;
@@ -127,6 +135,7 @@ public class PanelReader {
 				bean = getEntityRestrictions(bean, stdPanelElement);
 				stdPanel = new AdaptStandardPanel();
 				stdPanel.setName(id);
+				stdPanel.setReportPanel(Boolean.TRUE.toString().equals(reportPanel));
 				stdPanel.setEntityBean(bean);
 				stdPanel.setLabel(bean.getLabel());
 				stdPanel.setPanelSettings(getSettings(stdPanelElement, new PanelSettings()));
@@ -135,6 +144,35 @@ public class PanelReader {
 				stdPanel.setNextPanels(getNexts(document, stdPanelElement));
 				stdPanel.setZoomPanels(getZooms(document, stdPanelElement));
 				return stdPanel;
+			}
+		}
+		return null;
+	}
+	
+	private static AdaptParameterPanel findParameterPanel(Document document, String panelId) {
+		NodeList pPanelNodes = document.getElementsByTagName(Tags.PARAMETER_PANEL);
+		String id = null;
+		for(int i=0; i<pPanelNodes.getLength(); i++) {
+			Element pPanelElement = (Element)pPanelNodes.item(i);
+			id = pPanelElement.getAttribute(Tags.ID);
+			if(id.equals(panelId)) {
+				String ejbRef = pPanelElement.getAttribute(Tags.EJB_REF);
+				String reportPanel = pPanelElement.getAttribute(Tags.REPORT_PANEL);
+				EntityBean bean = EntityReader.load(ejbRef) ;
+				if(bean == null) {
+					return null;
+				}
+				AdaptParameterPanel pPanel = new AdaptParameterPanel();
+				bean = getEntityRestrictions(bean, pPanelElement);
+				pPanel = new AdaptParameterPanel();
+				pPanel.setName(id);
+				pPanel.setReportPanel(Boolean.TRUE.toString().equals(reportPanel));
+				pPanel.setLabel(bean.getLabel());
+				pPanel.setPanelSettings(getSettings(pPanelElement, new PanelSettings()));
+				pPanel.setDataSettings(new DataSettings());
+				pPanel.setStandardOperations(getStandardOperations(pPanelElement, new SpecificOperations()));
+				pPanel.setZoomPanels(getZooms(document, pPanelElement));
+				return pPanel;
 			}
 		}
 		return null;
@@ -158,6 +196,11 @@ public class PanelReader {
 					PanelSettings settings = stdPanel.getPanelSettings();
 					stdPanel.setPanelSettings(getSettings(elem, settings));
 					stdPanel.setStandardOperations(getStandardOperations(elem, stdPanel.getStandardOperations()));
+				}else if(panel instanceof AdaptParameterPanel){
+					AdaptParameterPanel pPanel = (AdaptParameterPanel) panel;
+					PanelSettings settings = pPanel.getPanelSettings();
+					pPanel.setPanelSettings(getSettings(elem, settings));
+					pPanel.setStandardOperations(getStandardOperations(elem, pPanel.getStandardOperations()));
 				}
 				return panel;
 			}
@@ -193,8 +236,20 @@ public class PanelReader {
 			Element elem = (Element)nodeList.item(i);
 			id = elem.getAttribute(Tags.ID);
 			if(id.equals(panelId)) {
+				String ejbRef = elem.getAttribute(Tags.EJB_REF);
+				EntityBean bean = EntityReader.load(ejbRef) ;
+				if(bean == null) {
+					return null;
+				}
 				AdaptManyToManyPanel mtmPanel = new AdaptManyToManyPanel();
+				bean = getEntityRestrictions(bean, elem);
+				mtmPanel.setEntityBean(bean);
 				mtmPanel.setName(id);
+				
+				List<Zoom> zooms = getZooms(doc, elem);
+				if(zooms!=null && !zooms.isEmpty()){
+					mtmPanel.setZoom(zooms.get(0));
+				}
 				String label = elem.getAttribute(Tags.LABEL);
 				mtmPanel.setLabel(label);
 				NodeList childPanelNodes = elem.getElementsByTagName(Tags.PANEL);
@@ -206,6 +261,7 @@ public class PanelReader {
 				return mtmPanel;
 			}
 		}
+		
 		return null;
 	}
 
@@ -234,10 +290,14 @@ public class PanelReader {
 
 	// Returns JSON representation of parent-child panels' panels
 	// This method is used to quickly fetch parent-child panel information from XML file
-	public static ArrayList<String> getJSONPanelList(String pcPanelName) {
+	public static ArrayList<String> getJSONParentChildPanelList(String pcPanelName) {
 		ArrayList<String> panels = new ArrayList<String>();
 		Document document = XMLParserUtils.parseXml(panelsDirectoryPath + panelsFileName);
 		NodeList nodeList = document.getElementsByTagName(Tags.PARENT_CHILD);
+		
+		AppCache.displayTextOnMainFrame("PanelReader.getJSONParentChildPanelList: pcPanelName: "+pcPanelName, 0);
+		AppCache.displayTextOnMainFrame("PanelReader.getJSONParentChildPanelList: nodeListLangth: "+nodeList.getLength(), 0);
+		
 		for(int i=0;i <nodeList.getLength(); i++) {
 			Element elem = (Element) nodeList.item(i);
 			String id =  elem.getAttribute(Tags.ID);
@@ -262,7 +322,39 @@ public class PanelReader {
 		}
 		return panels;
 	}
-
+	
+	public static ArrayList<String> getJSONManyToManyPanelList(String mtmPanelName) {
+		ArrayList<String> panels = new ArrayList<String>();
+		Document document = XMLParserUtils.parseXml(panelsDirectoryPath + panelsFileName);
+		NodeList nodeList = document.getElementsByTagName(Tags.MANY_TO_MANY);
+		AppCache.displayTextOnMainFrame("PanelReader.getJSONManyToManyPanelList: mtmPanelName: "+mtmPanelName, 0);
+		AppCache.displayTextOnMainFrame("PanelReader.getJSONManyToManyPanelList: nodeListLangth: "+nodeList.getLength(), 0);
+		
+		for(int i=0;i <nodeList.getLength(); i++) {
+			Element elem = (Element) nodeList.item(i);
+			String id =  elem.getAttribute(Tags.ID);
+			if(id.equals(mtmPanelName)) {
+				NodeList childPanelNodes = elem.getElementsByTagName(Tags.PANEL);
+				for(int j=0; j<childPanelNodes.getLength(); j++) {
+					Element subElem = (Element) childPanelNodes.item(j);
+					String panelRef = subElem.getAttribute(Tags.PANEL_REF);
+					String asocEnd = subElem.getAttribute(Tags.ASSOCIATION_END);
+					/*
+					 * FORMAT:
+					 * 	"activate"          : "${panel.name}"<#if (panel.associationEnd??)>,
+            			"assoiciation_end"  : "${panel.associationEnd}"</#if>
+					 */
+					String jsonEntry = "\"activate\":	\"" + panelRef + "\"";
+					if(asocEnd != null && !asocEnd.equals("")) {
+						jsonEntry += ", \"assoiciation_end\":	\"" + asocEnd + "\"";
+					}
+					panels.add(jsonEntry);
+				}
+			}
+		}
+		return panels;
+	}
+	
 	private static AdaptStandardPanel getSubPanel(Element elem) {
 		AdaptStandardPanel stdPanel = null;
 		String panelRef = elem.getAttribute(Tags.PANEL_REF);
@@ -463,7 +555,7 @@ public class PanelReader {
 		return nexts;
 	}
 
-	private static List<Zoom> getZooms(Document doc, Element elem) {
+	public static List<Zoom> getZooms(Document doc, Element elem) {
 		List<Zoom> zooms = new ArrayList<Zoom>();
 		Zoom zoom = null;
 		NodeList zoomNodes = elem.getElementsByTagName(Tags.ZOOM);
@@ -476,4 +568,33 @@ public class PanelReader {
 		}
 		return zooms;
 	}
+
+	public static String getPanelsDirectoryPath() {
+		return panelsDirectoryPath;
+	}
+	
+	public static ArrayList<String> getJSONZooms(String panelName, String tagName) {
+		ArrayList<Zoom> zoomList = new ArrayList<Zoom>();
+		Document document = XMLParserUtils.parseXml(panelsDirectoryPath + panelsFileName);
+		NodeList nodeList = document.getElementsByTagName(tagName);
+		
+		for(int i=0;i <nodeList.getLength(); i++) {
+			Element elem = (Element) nodeList.item(i);
+			String id =  elem.getAttribute(Tags.ID);
+			if(id.equals(panelName)) {
+				List<Zoom> zoomsToAdd = PanelReader.getZooms(document, elem);
+				
+				if(zoomsToAdd!=null && !zoomsToAdd.isEmpty()){
+					zoomList.addAll(zoomsToAdd);
+				}
+			}
+		}
+		ArrayList<String> zooms = new ArrayList<String>();
+		for(Zoom zoom: zoomList){
+			String jsonEntry = "\"activate\":	\"" + zoom.getPanelId() + "\"";
+			zooms.add(jsonEntry);
+		}
+		return zooms;
+	}
+
 }

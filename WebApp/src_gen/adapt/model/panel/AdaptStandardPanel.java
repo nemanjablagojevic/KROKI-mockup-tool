@@ -20,6 +20,7 @@ public class AdaptStandardPanel extends AdaptPanel {
 	protected String associationEnd;
 	protected List<Next> nextPanels = new ArrayList<Next>();
 	protected List<Zoom> zoomPanels = new ArrayList<Zoom>();
+	protected Boolean reportPanel;
 	
 	public EntityBean getEntityBean() {
 		return entityBean;
@@ -69,4 +70,11 @@ public class AdaptStandardPanel extends AdaptPanel {
 	public void setAssociationEnd(String associationEnd) {
 		this.associationEnd = associationEnd;
 	}
+	public Boolean getReportPanel() {
+		return reportPanel;
+	}
+	public void setReportPanel(Boolean reportPanel) {
+		this.reportPanel = reportPanel;
+	}
+	
 }

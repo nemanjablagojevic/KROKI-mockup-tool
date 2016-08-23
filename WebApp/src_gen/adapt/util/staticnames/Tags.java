@@ -39,6 +39,9 @@ public class Tags {
 	public static final String CHILD_PANEL = read("child_panel");
 	public static final String PANEL_REF = read("panel_reference");
 	public static final String MANY_TO_MANY = read("many_to_many");
+	public static final String MANY_TO_MANY_PANELS = read("many_to_many_panels");
+	public static final String PARAMETER_PANELS = read("parameter_panels");
+	public static final String PARAMETER_PANEL = read("parameter_panel");
 	public static final String OPPOSITE = read("opposite");
 	
 	public static final String PANEL = read("panel");
@@ -50,6 +53,7 @@ public class Tags {
 	
 	public static final String ID = read("id");
 	public static final String EJB_REF = read("ejb_ref");
+	public static final String REPORT_PANEL = read("report_panel");
 	public static final String LEVEL = read("level");
 	public static final String ASSOCIATION_END = read("association_end");
 	public static final String OPERATION_GROUP = read("operation_group");

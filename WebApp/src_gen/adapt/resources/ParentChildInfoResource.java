@@ -9,10 +9,6 @@ import org.restlet.resource.Representation;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.Variant;
 
-import adapt.enumerations.OpenedAs;
-import adapt.enumerations.PanelType;
-import adapt.model.panel.AdaptPanel;
-import adapt.model.panel.AdaptParentChildPanel;
 import adapt.util.xml_readers.PanelReader;
 
 /**
@@ -32,7 +28,7 @@ public class ParentChildInfoResource extends BaseResource {
 		if(panelName != null) {
 			//AdaptPanel panel = PanelReader.loadPanel(panelName, PanelType.PARENTCHILDPANEL, null, OpenedAs.DEFAULT);
 			//AdaptParentChildPanel pcPanel = (AdaptParentChildPanel)panel;
-			ArrayList<String> panles = PanelReader.getJSONPanelList(panelName);
+			ArrayList<String> panles = PanelReader.getJSONParentChildPanelList(panelName);
 			addToDataModel("panels", panles);
 		}
 		super.handleGet();

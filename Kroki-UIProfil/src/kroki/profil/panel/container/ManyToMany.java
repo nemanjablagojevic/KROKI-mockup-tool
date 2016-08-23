@@ -1,14 +1,62 @@
 package kroki.profil.panel.container;
 
+import kroki.mockup.model.Composite;
+import kroki.mockup.model.components.TitledContainer;
+import kroki.profil.group.ElementsGroup;
 import kroki.profil.panel.ContainerPanel;
 
 /**
- * <code>ManyToMany</code> represents a many-to-many panel
- *  (in cases when associations with many-to-many cardinality exists)
- * @author Vladan Marsenić (vladan.marsenic@gmail.com)
+ * <code>ManyToMany</code> represents a ManyToMany panel whose contained panels 
+ * are organized in a hierarchical structure.
  */
 public class ManyToMany extends ContainerPanel {
 	
-	private static final long serialVersionUID = 1L;
 	
+	private static final long serialVersionUID = 1L;
+
+	private ElementsGroup propertiesPanel;
+	private ElementsGroup operationsPanel;
+
+	public ManyToMany() {
+		super();
+		component = new TitledContainer("Many to many");
+		component.getRelativePosition().setLocation(5, 5);
+		component.getAbsolutePosition().setLocation(5, 5);
+		component.getDimension().setSize(800, 500);
+	}
+
+	
+
+	@Override
+	public void update() {
+		component.updateComponent();
+		((Composite) component).layout();
+	}
+
+	@Override
+	public String toString() {
+		return label;
+	}
+
+	
+
+
+	/*******************/
+	/*GETTERS AND SETTERS**/
+	/*******************/
+	public ElementsGroup getOperationsPanel() {
+		return operationsPanel;
+	}
+
+	public void setOperationsPanel(ElementsGroup operationsPanel) {
+		this.operationsPanel = operationsPanel;
+	}
+
+	public ElementsGroup getPropertiesPanel() {
+		return propertiesPanel;
+	}
+
+	public void setPropertiesPanel(ElementsGroup propertiesPanel) {
+		this.propertiesPanel = propertiesPanel;
+	}
 }

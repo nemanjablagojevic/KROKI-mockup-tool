@@ -40,6 +40,10 @@ public interface KrokiMockupToolCommandSyntaxListener extends ParseTreeListener 
 	 * @param ctx the parse tree
 	 */
 	void exitMakeParentChildPanel(@NotNull KrokiMockupToolCommandSyntaxParser.MakeParentChildPanelContext ctx);
+	
+	void enterMakeManyToManyPanel(@NotNull KrokiMockupToolCommandSyntaxParser.MakeManyToManyPanelContext ctx);
+
+	void exitMakeManyToManyPanel(@NotNull KrokiMockupToolCommandSyntaxParser.MakeManyToManyPanelContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link KrokiMockupToolCommandSyntaxParser#makeProject}.
 	 * @param ctx the parse tree

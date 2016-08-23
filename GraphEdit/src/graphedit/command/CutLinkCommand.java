@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import kroki.profil.association.Hierarchy;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.utils.HierarchyUtil;
 
@@ -62,7 +63,7 @@ public class CutLinkCommand extends Command {
 			
 
 			//if link represents a hierarchy, delete all child hierarchies as well
-			if (sourceElement.getUmlElement() instanceof ParentChild){
+			if (sourceElement.getUmlElement() instanceof ParentChild || sourceElement.getUmlElement() instanceof ManyToMany){
 				HierarchyElement hierarchyElement = ((UIClassElement)sourceElement).getHierarchyMap().get(link.getSourceConnector());
 				Hierarchy hierarchy = hierarchyElement.getHierarchy();
 				

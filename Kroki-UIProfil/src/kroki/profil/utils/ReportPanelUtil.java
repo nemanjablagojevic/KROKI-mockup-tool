@@ -1,24 +1,32 @@
 package kroki.profil.utils;
 
+import java.awt.TextField;
+
+import javax.swing.JLabel;
+
 import kroki.mockup.model.Composite;
 import kroki.mockup.model.components.Button;
+import kroki.mockup.model.components.Panel;
+import kroki.mockup.model.components.RadioButton;
 import kroki.mockup.model.layout.BorderLayoutManager;
 import kroki.mockup.model.layout.FlowLayoutManager;
 import kroki.mockup.model.layout.LayoutManager;
 import kroki.mockup.model.layout.VerticalLayoutManager;
 import kroki.mockup.utils.SerializableBufferedImage;
 import kroki.profil.ComponentType;
+import kroki.profil.association.Zoom;
 import kroki.profil.group.ElementsGroup;
 import kroki.profil.group.GroupAlignment;
 import kroki.profil.group.GroupLocation;
 import kroki.profil.group.GroupOrientation;
-import kroki.profil.panel.StandardPanel;
+import kroki.profil.panel.ReportPanel;
+import kroki.profil.property.VisibleProperty;
 
 /**
-* Class contains <code>StandardPanel</code> util methods 
+* Class contains <code>ReportPanel</code> util methods 
 * @author Kroki Team
 */
-public class StandardPanelUtil {
+public class ReportPanelUtil {
 
 	  
 	/**
@@ -26,7 +34,7 @@ public class StandardPanelUtil {
 	 * Creates toolbar, properties panel, option panel etc.
 	 * @param panel Panel
 	 */
-   public static void defaultGuiSettings(StandardPanel panel) {
+   public static void defaultGuiSettings(ReportPanel panel) {
        
        Composite root = ((Composite) panel.getComponent());
        root.setLayoutManager(new BorderLayoutManager());
@@ -56,6 +64,37 @@ public class StandardPanelUtil {
        ((Composite) panel.getOperationsPanel().getComponent()).setLayoutManager(operationsLayout);
        ((Composite) panel.getOperationsPanel().getComponent()).setLocked(true);
 
+       
+       ElementsGroup reportPanel = new ElementsGroup("Slanje izvestaja", ComponentType.PANEL);
+       reportPanel.setLabel("Slanje izvestaja");
+       reportPanel.setName("Slanje izvestaja");
+       reportPanel.setGroupLocation(GroupLocation.operationPanel);
+       reportPanel.setGroupOrientation(GroupOrientation.vertical);
+       reportPanel.setGroupAlignment(GroupAlignment.left);
+       ((Composite) reportPanel.getComponent()).setLayoutManager(propertiesLayout);
+       ((Composite) reportPanel.getComponent()).setLocked(true);
+       
+       RadioButton radioButton1 = new RadioButton("Na ekran", true);
+       RadioButton radioButton2 = new RadioButton("Na štampač", false);
+       TextField tf = new TextField();
+       tf.setName("Br. kopija");
+       Button button = new Button("OK");
+       
+       
+       //VisibleProperty reportPanelVP = new VisibleProperty(reportPanel.name(), true, ComponentType.PANEL);
+       VisibleProperty rb1VP = new VisibleProperty(radioButton1.getName(), true, ComponentType.RADIO_BUTTON);
+       VisibleProperty rb2VP = new VisibleProperty(radioButton2.getName(), true, ComponentType.RADIO_BUTTON);
+       VisibleProperty tfVP = new VisibleProperty(tf.getName(), true, ComponentType.TEXT_FIELD);
+       VisibleProperty buttonVP = new VisibleProperty(button.getName(), true, ComponentType.BUTTON);
+       
+       ElementsGroupUtil.addVisibleElement(reportPanel, rb1VP);
+       ElementsGroupUtil.addVisibleElement(reportPanel, rb2VP);
+       ElementsGroupUtil.addVisibleElement(reportPanel, tfVP);
+       ElementsGroupUtil.addVisibleElement(reportPanel, buttonVP);
+       ElementsGroupUtil.addVisibleElement(panel.getOperationsPanel(), reportPanel);
+       
+       //UIPropertyUtil.addVisibleElement(panel, reportPanelVP);
+       
        UIPropertyUtil.addVisibleElement(panel, panel.getToolbarPanel());
        UIPropertyUtil.addVisibleElement(panel, panel.getPropertiesPanel());
        UIPropertyUtil.addVisibleElement(panel, panel.getOperationsPanel());
@@ -75,7 +114,7 @@ public class StandardPanelUtil {
     * Creates mockup components which contain standard toolbar operations 
     * @param panel Panel
     */
-   private static void createMockupForStandardOperations(StandardPanel panel) {
+   private static void createMockupForStandardOperations(ReportPanel panel) {
        panel.setAddButton(new Button());
        panel.getAddButton().setImage(new SerializableBufferedImage("plus"));
        panel.getAddButton().updateComponent();
@@ -117,7 +156,7 @@ public class StandardPanelUtil {
        panel.getLastButton().updateComponent();
    }
 
-   public static void initializeStandardToolbar(StandardPanel panel) {
+   public static void initializeStandardToolbar(ReportPanel panel) {
        Composite composite = (Composite) panel.getToolbarPanel().getComponent();
        if (panel.isSearch()) {
            composite.addChild(panel.getSearchButton());

@@ -5,6 +5,7 @@ import kroki.mockup.model.Composite;
 import kroki.profil.VisibleElement;
 import kroki.profil.association.Hierarchy;
 import kroki.profil.panel.VisibleClass;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.uml_core_basic.UmlOperation;
 import kroki.uml_core_basic.UmlProperty;
@@ -123,6 +124,14 @@ public class UIPropertyUtil {
 		}
 		addVisibleElement((VisibleClass)panel, visibleElement);
 	}
+	
+	public static void addVisibleElement(ManyToMany panel, VisibleElement visibleElement) {
+		if (visibleElement instanceof Hierarchy) {
+			Hierarchy hierarchy = (Hierarchy) visibleElement;
+			HierarchyUtil.setHierarchhyAttributes(panel, hierarchy);
+		}
+		addVisibleElement((VisibleClass)panel, visibleElement);
+	}
 
 
 	/**
@@ -134,6 +143,14 @@ public class UIPropertyUtil {
 	 * @param visibleElement Visible element
 	 */
 	public static void addVisibleElement(ParentChild panel, int index, VisibleElement visibleElement) {
+		if (visibleElement instanceof Hierarchy) {
+			Hierarchy hierarchy = (Hierarchy) visibleElement;
+			HierarchyUtil.setHierarchhyAttributes(panel, hierarchy);
+		}
+		addVisibleElement((VisibleClass)panel, index, visibleElement);
+	}
+	
+	public static void addVisibleElement(ManyToMany panel, int index, VisibleElement visibleElement) {
 		if (visibleElement instanceof Hierarchy) {
 			Hierarchy hierarchy = (Hierarchy) visibleElement;
 			HierarchyUtil.setHierarchhyAttributes(panel, hierarchy);

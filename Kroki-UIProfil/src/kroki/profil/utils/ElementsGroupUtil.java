@@ -12,6 +12,7 @@ import kroki.profil.association.Zoom;
 import kroki.profil.group.ElementsGroup;
 import kroki.profil.group.GroupLocation;
 import kroki.profil.operation.VisibleOperation;
+import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.property.VisibleProperty;
 
@@ -99,7 +100,14 @@ public class ElementsGroupUtil {
 	 */
 	public static VisibleElement getVisibleElementAtPoint(ElementsGroup group, Point point) {
 		for (VisibleElement visibleElement : group.getVisibleElementList()) {
+			double xStart = visibleElement.getComponent().getAbsolutePosition().getX();
+			double xEnd = visibleElement.getComponent().getAbsolutePosition().getX()+visibleElement.getComponent().getDimension().getWidth();
+			double yStart = visibleElement.getComponent().getAbsolutePosition().getY();
+			double yEnd = visibleElement.getComponent().getAbsolutePosition().getY()+visibleElement.getComponent().getDimension().getHeight();
+			System.out.println("X-"+xStart+"-"+point.getX()+"-"+xEnd);
+			System.out.println("Y-"+yStart+"-"+point.getY()+"-"+yEnd);
 			if (visibleElement.getComponent().contains(point)) {
+				System.out.println("USAO");
 				if (visibleElement instanceof ElementsGroup) {
 					VisibleElement retElem = getVisibleElementAtPoint(((ElementsGroup) visibleElement), point);
 					if (retElem != null) {
@@ -159,7 +167,7 @@ public class ElementsGroupUtil {
 				flag = true;
 			} else if (visibleElement instanceof Hierarchy && group.getGroupLocation() == GroupLocation.componentPanel) {
 				//NEW:
-					if (group.umlClass() instanceof ParentChild) {
+					if (group.umlClass() instanceof ParentChild || group.umlClass() instanceof ManyToMany) {
 						return true;
 					}
 			} else {
