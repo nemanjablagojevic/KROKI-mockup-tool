@@ -139,7 +139,8 @@
         <#if group.name != ""><span class="groupName">${group.name}</span></#if>
         <#list group.elements as element>
         <#if element.class.simpleName == "Operation">
-        <button class="buttons-blue operationButton" data-operation="${element.label}" data-confirmLink="justClose" data-confirmText="Not implemented yet!">
+		
+        <button class="buttons-blue parameterButtonAct" data-parentpanel="${panel.name}" data-activate="/showParameter/${panel.name}/${element.name}" data-paneltype="PARAMETERPANEL" data-label="${element.label}">
             <#if element.type == "BUSINESSTRANSACTION">
             <img class="operationIcon" src="/files/images/icons-white/operation.png">
             <#elseif element.type == "VIEWREPORT">

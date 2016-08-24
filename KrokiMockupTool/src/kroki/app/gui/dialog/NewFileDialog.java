@@ -20,7 +20,6 @@ import javax.swing.JTextField;
 import kroki.app.KrokiMockupToolApp;
 import kroki.app.utils.StringResource;
 import kroki.commons.camelcase.NamingUtil;
-import kroki.profil.panel.ParameterPanel;
 import kroki.profil.panel.ReportPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
@@ -28,7 +27,6 @@ import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.subsystem.BussinesSubsystem;
 import kroki.profil.utils.ManyToManyUtil;
-import kroki.profil.utils.ParameterPanelUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.ReportPanelUtil;
 import kroki.profil.utils.StandardPanelUtil;
@@ -173,10 +171,6 @@ public class NewFileDialog extends JDialog {
             	visibleClass = new ReportPanel();
                 ReportPanelUtil.defaultGuiSettings((ReportPanel)visibleClass);
             } 
-//            else if (fileTypeCb.getSelectedItem() == FileType.PARAMETER_PANEL){
-//            	visibleClass = new ParameterPanel();
-//                ParameterPanelUtil.defaultGuiSettings((ParameterPanel)visibleClass);
-//            }
             visibleClass.setLabel(nameTf.getText());
             visibleClass.getComponent().setName(nameTf.getText());
             if(visibleClass instanceof StandardPanel) {

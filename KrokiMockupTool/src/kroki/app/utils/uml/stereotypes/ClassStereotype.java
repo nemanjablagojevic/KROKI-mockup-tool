@@ -20,8 +20,6 @@ public class ClassStereotype {
 	 */
 	public static final String STEREOTYPE_STANDARD_PANEL_NAME="StandardPanel";
 	
-	public static final String STEREOTYPE_PARAMETER_PANEL_NAME="ParameterPanel";
-	
 	/**
 	 * Name of the ParentChild stereotype that can be applied to a UML Class element.
 	 */

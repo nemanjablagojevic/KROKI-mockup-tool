@@ -63,9 +63,9 @@ public class ReportSettings extends BussinessOperationSettings {
         }
         intermediate.add(reportNameLb);
         intermediate.add(reportNameTf);
-        intermediate.add(dataFilterLb);
-        intermediate.add(sortByTf);
         intermediate.add(sortByLb);
+        intermediate.add(sortByTf);
+        intermediate.add(dataFilterLb);
         intermediate.add(dataFilterSp);
     }
 

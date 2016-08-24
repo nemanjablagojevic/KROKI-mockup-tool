@@ -19,7 +19,6 @@ import kroki.profil.operation.BussinessOperation;
 import kroki.profil.operation.Report;
 import kroki.profil.operation.Transaction;
 import kroki.profil.operation.VisibleOperation;
-import kroki.profil.panel.ParameterPanel;
 import kroki.profil.panel.ReportPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
@@ -67,13 +66,10 @@ public class PanelGenerator {
 			Element parentChildRoot = doc.createElement("parent-child-panels");
 			//root element for many-to-many panels
 			Element mtmPanelsRoot = doc.createElement("many-to-many-panels");
-			//root element for standard panel
-			Element pPanelsRoot = doc.createElement("parameter-panels");
 			
 			root.appendChild(stdPanelsRoot);
 			root.appendChild(parentChildRoot);
 			root.appendChild(mtmPanelsRoot);
-			root.appendChild(pPanelsRoot);
 			
 			
 			  /************************************/
@@ -320,6 +316,19 @@ public class PanelGenerator {
 										}
 									}
 								}
+								if(vo instanceof Report){
+									Report report = (Report)vo;
+									if(report.getReportName()!=null){
+										Attr reportNameAttr = doc.createAttribute("report-name");
+										reportNameAttr.setValue(report.getReportName());
+										opTag.setAttributeNode(reportNameAttr);
+									}
+									if(report.getDataFilter()!=null){
+										Attr dataFilterAttr = doc.createAttribute("data-filter");
+										dataFilterAttr.setValue(report.getDataFilter());
+										opTag.setAttributeNode(dataFilterAttr);
+									}
+								}
 								operationsTag.appendChild(opTag);
 							}
 						}
@@ -481,173 +490,6 @@ public class PanelGenerator {
 						mtmTag.appendChild(zoomTag);
 					}
 					
-				} else if(element instanceof ParameterPanel) {
-					ParameterPanel panel = (ParameterPanel)element;
-					StdPanelSettings settings = panel.getStdPanelSettings();
-					
-					Element pPanel = doc.createElement("parameter-panel");
-					
-					String id = panel.getPersistentClass().name().toLowerCase() + "_pp";
-					String ejbRef = "ejb." + panel.getPersistentClass().name();
-					if(repo != null) {
-						ejbRef = "ejb_generated." + panel.getPersistentClass().name();
-					}
-						
-					
-					//attribute "id"
-					Attr idAttr = doc.createAttribute("id");
-					idAttr.setValue(id);
-					pPanel.setAttributeNode(idAttr);
-					
-					//attribute "ejb-ref"
-					Attr ejbRefAttr = doc.createAttribute("ejb-ref");
-					ejbRefAttr.setValue(ejbRef);
-					pPanel.setAttributeNode(ejbRefAttr);
-					
-					Element eSettings = doc.createElement("settings");
-					
-					Attr viewModeAttr = doc.createAttribute("view-mode");
-					if(settings.getDefaultViewMode() == ViewMode.INPUT_PANEL_MODE) {
-						viewModeAttr.setValue("panel");
-					}else {
-						viewModeAttr.setValue("table");
-					}
-					
-					eSettings.setAttributeNode(viewModeAttr);
-					//attribute change-mode
-					Attr changeModeAttr = doc.createAttribute("change-mode");
-					changeModeAttr.setValue(String.valueOf(panel.isChangeMode()));
-					eSettings.setAttributeNode(changeModeAttr);
-					//attribute data-navigation
-					Attr dataNavAttr = doc.createAttribute("data-navigation");
-					dataNavAttr.setValue(String.valueOf(panel.isDataNavigation()));
-					eSettings.setAttributeNode(dataNavAttr);
-					
-					pPanel.appendChild(eSettings);
-					
-					//<operations> tag
-					if(!VisibleClassUtil.containedOperations(vClass).isEmpty()) {
-						Element operationsTag = doc.createElement("operations");
-						pPanel.appendChild(operationsTag);
-						
-						for(int k=0; k < VisibleClassUtil.containedOperations(vClass).size(); k++) {
-							VisibleOperation vo = VisibleClassUtil.containedOperations(vClass).get(k);
-							if(vo instanceof BussinessOperation) {
-								Element opTag = doc.createElement("operation");
-								ElementsGroup elemGroup = vo.getParentGroup();
-								String groupName = "operations";
-								if(elemGroup != null) {
-									groupName = elemGroup.getLabel();
-								}
-								
-								//attribute "name"
-								Attr opNameAttr = doc.createAttribute("name");
-								opNameAttr.setValue(vo.name());
-								opTag.setAttributeNode(opNameAttr);
-								
-								//attribute "label"
-								Attr opLabelAttr = doc.createAttribute("label");
-								opLabelAttr.setValue(vo.getLabel());
-								opTag.setAttributeNode(opLabelAttr);
-								
-								//attribute "elementgroup"
-								if(!groupName.equals("operations")) {
-									Attr opGroupAttr = doc.createAttribute("operationgroup");
-									opGroupAttr.setValue(groupName);
-									opTag.setAttributeNode(opGroupAttr);
-								}
-								
-								//attribute "type"
-								Attr opTypeAttr = doc.createAttribute("type");
-								
-								//if the operation is a report put type="report"
-								if(vo instanceof Report) {
-									opTypeAttr.setValue("report");
-								//if the operation is a transaction put type="transaction"
-								}else if (vo instanceof Transaction) {
-									opTypeAttr.setValue("transaction");
-								}
-								
-								opTag.setAttributeNode(opTypeAttr);
-								
-								//attribute "target"
-								Attr opTargetAttr = doc.createAttribute("target");
-								//cuurently not implemented, so put null
-								if(((BussinessOperation) vo).getPersistentOperation() == null) {
-									opTargetAttr.setValue("null");
-								}else {
-									opTargetAttr.setValue(((BussinessOperation) vo).getPersistentOperation().name());
-								}
-								opTag.setAttributeNode(opTargetAttr);
-								
-								//attribute "allowed"
-								//for now always set to true
-								Attr opAllowedAttr = doc.createAttribute("allowed");
-								opAllowedAttr.setValue("true");
-								opTag.setAttributeNode(opAllowedAttr);
-								
-								//for every parameter: 
-								//<parameter name="name" label="label" type="java.lang.String" parameter-type="in" /> tag
-								if(vo.ownedParameter() != null) {
-									if(!vo.ownedParameter().isEmpty()) {
-										for(int l=0;l<vo.ownedParameter().size();l++) {
-											UmlParameter param = vo.ownedParameter().get(l);
-											
-											Element paramTag = doc.createElement("parameter");
-											
-											//attribute "name"
-											Attr paramNameAttr = doc.createAttribute("name");
-											paramNameAttr.setValue(param.name());
-											paramTag.setAttributeNode(paramNameAttr);
-											
-											//attribute "label"
-											//TODO
-											//not implemented yet  :(
-											Attr paramLabelAttr = doc.createAttribute("label");
-											paramLabelAttr.setValue(param.name());
-											paramTag.setAttributeNode(paramLabelAttr);
-											
-											//attribute "type"
-											Attr paramTypeAttr = doc.createAttribute("type");
-											paramTypeAttr.setValue(param.type().toString());
-											paramTag.setAttributeNode(paramTypeAttr);
-											
-											//attribute "parameter-type"
-											//always set to in for now
-											Attr paramPTypeAttr = doc.createAttribute("parameter-type");
-											paramPTypeAttr.setValue("in");
-											paramTag.setAttributeNode(paramPTypeAttr);
-											
-											opTag.appendChild(paramTag);
-										}
-									}
-								}
-								operationsTag.appendChild(opTag);
-							}
-						}
-						
-						
-					}
-					
-					pPanelsRoot.appendChild(pPanel);
-					
-					  /************************************/
-					 /*         panel-map.xml            */
-					/************************************/
-					//tag <panel>
-					Element mapPanel = mapDoc.createElement("panel");
-					//attribute "id"
-					Attr mapIdAttr = mapDoc.createAttribute("id");
-					mapIdAttr.setValue(id);
-					mapPanel.setAttributeNode(mapIdAttr);
-					//attribute "ejb-ref"
-					Attr mapEjbRefAttr = mapDoc.createAttribute("ejb-ref");
-					mapEjbRefAttr.setValue(ejbRef);
-					mapPanel.setAttributeNode(mapEjbRefAttr);
-					
-					mapRoot.appendChild(mapPanel);
-					
-					//if it is a parent-child panel put panel> tag
 				}
 			}
 			

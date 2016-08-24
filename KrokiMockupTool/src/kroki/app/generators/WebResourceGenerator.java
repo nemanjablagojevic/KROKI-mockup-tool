@@ -15,7 +15,6 @@ import kroki.profil.operation.BussinessOperation;
 import kroki.profil.operation.Report;
 import kroki.profil.operation.Transaction;
 import kroki.profil.operation.VisibleOperation;
-import kroki.profil.panel.ParameterPanel;
 import kroki.profil.panel.VisibleClass;
 import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
@@ -66,10 +65,6 @@ public class WebResourceGenerator {
 				
 				if(element instanceof ManyToMany) {
 					forms= "ManyToManyForm";
-				}
-				
-				if(vClass instanceof ParameterPanel) {
-					forms= "ParameterForm";
 				}
 				
 				//System.out.println("\n[RESOURCE]" + "\n\tName: " + name + "\n\tLabel: " + label + "\n\tLink: " + link + "\n\tRouted: " + routed + "\n\tForms: " + forms + "\n");

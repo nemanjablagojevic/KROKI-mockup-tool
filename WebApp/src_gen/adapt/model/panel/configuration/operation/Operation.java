@@ -1,7 +1,9 @@
 package adapt.model.panel.configuration.operation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import adapt.enumerations.OperationType;
 import adapt.model.AbstractElement;
@@ -13,6 +15,7 @@ public class Operation extends AbstractElement {
 	protected Boolean allowed = true;
 	protected String target;
 	protected String parentGroup;
+	protected Map<String,String> dataFilter = new HashMap<String,String>();
 	
 	public void add(Parameter p) {
 		parameters.add(p);
@@ -61,4 +64,13 @@ public class Operation extends AbstractElement {
 	public void setParentGroup(String parentGroup) {
 		this.parentGroup = parentGroup;
 	}
+
+	public Map<String, String> getDataFilter() {
+		return dataFilter;
+	}
+
+	public void setDataFilter(Map<String, String> dataFilter) {
+		this.dataFilter = dataFilter;
+	}
+	
 }

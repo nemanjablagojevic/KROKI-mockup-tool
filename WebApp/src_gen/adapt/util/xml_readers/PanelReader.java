@@ -22,7 +22,6 @@ import adapt.model.ejb.EntityBean;
 import adapt.model.ejb.JoinColumnAttribute;
 import adapt.model.panel.AdaptManyToManyPanel;
 import adapt.model.panel.AdaptPanel;
-import adapt.model.panel.AdaptParameterPanel;
 import adapt.model.panel.AdaptParentChildPanel;
 import adapt.model.panel.AdaptStandardPanel;
 import adapt.model.panel.configuration.DataSettings;
@@ -35,6 +34,7 @@ import adapt.model.panel.configuration.operation.ParameterType;
 import adapt.model.panel.configuration.operation.SpecificOperations;
 import adapt.util.converters.ConverterUtil;
 import adapt.util.ejb.EntityHelper;
+import adapt.util.enums.ReportParamType;
 import adapt.util.repository_utils.RepositoryPathsUtil;
 import adapt.util.resolvers.PanelTypeResolver;
 import adapt.util.staticnames.Tags;
@@ -50,7 +50,7 @@ public class PanelReader {
 	protected static String panelsFileName		= "panel.xml";
 
 	private static String logPrefix = "PANEL READER: ";
-
+	
 	/**
 	 * Parse panel-to-ejb mapping from XML file
 	 */
@@ -101,14 +101,6 @@ public class PanelReader {
 					AppCache.displayTextOnMainFrame(logPrefix + " Fetching many-to-many panel data for: " + panelId, 0);
 					panel = findManyToManyPanel(document, panelId);
 					break;
-				case PARAMETERPANEL:
-					AppCache.displayTextOnMainFrame(logPrefix + " Fetching parameter panel data for: " + panelId, 0);
-					if(openedAs.equals(OpenedAs.NEXT)) {
-						panel = findNextPanel(document, panelId, type, openedId);
-					}else {
-						panel = findParameterPanel(document, panelId);
-					}
-					break;
 				}
 			} catch (Exception e) {
 				AppCache.displayTextOnMainFrame("Error reading panel data for name: " + panelId, 1);
@@ -148,35 +140,6 @@ public class PanelReader {
 		}
 		return null;
 	}
-	
-	private static AdaptParameterPanel findParameterPanel(Document document, String panelId) {
-		NodeList pPanelNodes = document.getElementsByTagName(Tags.PARAMETER_PANEL);
-		String id = null;
-		for(int i=0; i<pPanelNodes.getLength(); i++) {
-			Element pPanelElement = (Element)pPanelNodes.item(i);
-			id = pPanelElement.getAttribute(Tags.ID);
-			if(id.equals(panelId)) {
-				String ejbRef = pPanelElement.getAttribute(Tags.EJB_REF);
-				String reportPanel = pPanelElement.getAttribute(Tags.REPORT_PANEL);
-				EntityBean bean = EntityReader.load(ejbRef) ;
-				if(bean == null) {
-					return null;
-				}
-				AdaptParameterPanel pPanel = new AdaptParameterPanel();
-				bean = getEntityRestrictions(bean, pPanelElement);
-				pPanel = new AdaptParameterPanel();
-				pPanel.setName(id);
-				pPanel.setReportPanel(Boolean.TRUE.toString().equals(reportPanel));
-				pPanel.setLabel(bean.getLabel());
-				pPanel.setPanelSettings(getSettings(pPanelElement, new PanelSettings()));
-				pPanel.setDataSettings(new DataSettings());
-				pPanel.setStandardOperations(getStandardOperations(pPanelElement, new SpecificOperations()));
-				pPanel.setZoomPanels(getZooms(document, pPanelElement));
-				return pPanel;
-			}
-		}
-		return null;
-	}
 
 	private static AdaptPanel findNextPanel(Document doc,String panelId, PanelType panelType, String openedId) {
 		AdaptPanel panel = null;
@@ -196,11 +159,6 @@ public class PanelReader {
 					PanelSettings settings = stdPanel.getPanelSettings();
 					stdPanel.setPanelSettings(getSettings(elem, settings));
 					stdPanel.setStandardOperations(getStandardOperations(elem, stdPanel.getStandardOperations()));
-				}else if(panel instanceof AdaptParameterPanel){
-					AdaptParameterPanel pPanel = (AdaptParameterPanel) panel;
-					PanelSettings settings = pPanel.getPanelSettings();
-					pPanel.setPanelSettings(getSettings(elem, settings));
-					pPanel.setStandardOperations(getStandardOperations(elem, pPanel.getStandardOperations()));
 				}
 				return panel;
 			}
@@ -391,6 +349,36 @@ public class PanelReader {
 			String type = elemOperation.getAttribute(Tags.DATA_TYPE);
 			if (type.equals("report"))
 				oper.setType(OperationType.VIEWREPORT);
+				if(elemOperation.hasAttribute("report-name")){
+					String reportName = elemOperation.getAttribute("report-name");
+					if(elemOperation.hasAttribute("data-filter")){
+						String dataFilter = elemOperation.getAttribute("data-filter");
+						
+						if(dataFilter!=null && !dataFilter.isEmpty()){
+							dataFilter = dataFilter.replaceAll("&#10;", ""); //replace new lines
+							String[] parameterList;
+							if(dataFilter.contains(",")){
+								parameterList = dataFilter.split(",");
+							}else{
+								parameterList = new String[1];
+							}
+							for(int pc=0; pc<parameterList.length; pc++){
+								String parameterPair = parameterList[pc];
+								if(parameterPair!=null && parameterPair.contains(":")){
+									String[] parameter = parameterPair.split(":");
+									String parameterName = parameter[0].trim();
+									String parameterType = parameter[1].trim();
+									for(int spt=0; spt<ReportParamType.values().length; spt++){
+										if(ReportParamType.values()[spt].toString().equals(parameterType)){
+											oper.getDataFilter().put(parameterName, parameterType);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			
 			else if (type.equals("transaction")) {
 				oper.setType(OperationType.BUSINESSTRANSACTION);
 			}

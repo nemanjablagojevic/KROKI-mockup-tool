@@ -223,12 +223,6 @@ public class UMLDescriptionGenerator {
 					String hName = namer.toCamelCase(h.getTargetPanel().getComponent().getName(), false);
 					connections += "\n" + elName + " \"1\" -- \"1\" " + hName + ":<<hierarchy>> {level =" + h.getLevel() +"}"; 
 				}
-			}if(element instanceof ParameterPanel) {
-				VisibleClass vClass = (VisibleClass) element;
-				for (Zoom zoom : VisibleClassUtil.containedZooms(vClass)) {
-					String zoomed = namer.toCamelCase(zoom.getTargetPanel().getComponent().getName(), false);
-					connections += "\n" + elName + " \"*\" -- \"1 <<zoom>>\" " + zoomed;
-				}
 			}
 		}
 	}

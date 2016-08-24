@@ -18,6 +18,7 @@ import adapt.resources.HomeResource;
 import adapt.resources.IndexResource;
 import adapt.resources.ManyToManyInfoResource;
 import adapt.resources.ModifyResource;
+import adapt.resources.ParameterInfoResource;
 import adapt.resources.ParentChildInfoResource;
 import adapt.resources.PrintResource;
 import adapt.resources.ViewResource;
@@ -123,6 +124,8 @@ public class AdaptApplication extends Application {
 		router.attach("/", IndexResource.class);
 		router.attach("/homepage", HomeResource.class);
 		router.attach("/show/{activate}", ViewResource.class);
+		router.attach("/showParameter/{panelName}/{operationId}", ParameterInfoResource.class);
+		router.attach("/showParameterWP/{panelName}/{operationId}/{dataId}", ParameterInfoResource.class);
 		router.attach("/showWP/{activate}/{filter}", ViewResource.class);
 		router.attach("/showChildren/{childPanelName}/{associationEnd}/{pid}", ViewResource.class);
 		router.attach("/showChildrenMTM/{childPanelName}/{associationEnd}/{pid}", ManyToManyInfoResource.class);

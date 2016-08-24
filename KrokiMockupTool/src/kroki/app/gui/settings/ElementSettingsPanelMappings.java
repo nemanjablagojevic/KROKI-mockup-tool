@@ -12,7 +12,6 @@ import kroki.profil.group.ElementsGroup;
 import kroki.profil.operation.BussinessOperation;
 import kroki.profil.operation.Report;
 import kroki.profil.operation.Transaction;
-import kroki.profil.panel.ParameterPanel;
 import kroki.profil.panel.ReportPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
@@ -35,7 +34,6 @@ public class ElementSettingsPanelMappings {
 		settingsMap.put(ManyToMany.class, VisibleClassSettings.class);
 		settingsMap.put(VisibleClass.class, VisibleClassSettings.class);
 		settingsMap.put(StandardPanel.class, StandardPanelSettings.class);
-		settingsMap.put(ParameterPanel.class, ParameterPanelSettings.class);
 		settingsMap.put(Transaction.class, TransactionSettings.class);
 		settingsMap.put(Report.class, ReportSettings.class);
 		settingsMap.put(ReportPanel.class, StandardPanelSettings.class);

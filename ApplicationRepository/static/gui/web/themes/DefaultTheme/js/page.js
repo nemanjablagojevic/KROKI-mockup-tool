@@ -135,6 +135,16 @@
         Clicking these components displays corresponding standard panels in standard form.
         Currently, activators are: a) main menu items, b)lookup buttons and c)next links
     */
+	$(document).on("click", ".parameterButtonAct", function(e) {
+		var activator = $(this);
+		var activate = $(this).attr("data-activate");
+		var panelType = $(this).attr("data-paneltype");
+		var resourceId = $(this).attr("data-parentpanel");
+		var label = $(this).attr("data-label");
+		
+		makeNewWindow(activate, label, panelType, false, null, null, resourceId);
+	});
+	
     $(document).on("click", ".activator", function(e) {
         e.stopPropagation();
         var activator = $(this);
@@ -565,6 +575,45 @@
 				
               
             });
+		} else if(panelType == "PARAMETERPANEL") {
+			
+			$.getJSON(activate, function(data) {
+				//Create <div> element for each contained panel
+				var newParameterForm = $(document.createElement("div"));
+				newParameterForm.addClass("standardForms");
+				newParameterForm.attr("id", generateUUID());
+				newParameterForm.attr("data-activate", activate);
+				var parentPanelName = data.parentPanelName;
+				
+				newParameterForm.attr("data-parameterresourceid", parentPanelName);
+				newWindowBody.append(newParameterForm);
+				var window = newParameterForm.closest(".windows");
+				window.show();
+				focus(window);
+				
+				if(data.panelDataList){
+					for(var i=0; i<data.panelDataList.length; i++) {
+						var panelData = data.panelDataList[i];
+						if(panelData.standardPanelData){
+							var parentForm = $('.standardForms[data-resourceid='+parentPanelName+']');
+							var trComponents = parentForm.find(".inputFormFields tr")
+							var table = $(document.createElement("table"));
+							for(var j=0; j<panelData.standardPanelData.length; j++) {
+								trComponents.each(function(k, item) {
+									var inputComponent = $(item).find('input');
+									if(inputComponent && inputComponent.attr('name') == panelData.standardPanelData[j]){
+										var tr = $(this).clone();
+										table.append(tr);
+									}
+								});
+							}
+							newParameterForm.append(table);
+							
+						}
+					}
+				}
+			});
+				
 		}else {
 			var newStandardForm = $(document.createElement("div"));
 			newStandardForm.addClass("standardForms");
@@ -992,6 +1041,9 @@
 			if(!returnTo.endsWith('_mtm')){
 				var caller = getForm(returnTo);
 				var callerPanel = caller.attr("data-resourceId");
+				if(caller.attr('data-parameterresourceid')){
+					callerPanel = caller.attr("data-parameterresourceid");
+				}
 				$.getJSON("/getZooms/" + callerPanel + "/" + zoomName + "/" + id, function(data) {
 					for(var i = 0; i < data.zoomValues.length; i++) {
 						var zoomName = data.zoomValues[i].name;
