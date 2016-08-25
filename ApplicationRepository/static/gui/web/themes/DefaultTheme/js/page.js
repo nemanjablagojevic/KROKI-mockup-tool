@@ -577,6 +577,14 @@
             });
 		} else if(panelType == "PARAMETERPANEL") {
 			
+			var parentForm = $('.standardForms[data-resourceid='+resourceId+']');
+			var selectedTr = parentForm.find('.selectedTr');
+			if(selectedTr && selectedTr.length>0){
+				var id = selectedTr.find('[id=idCell]').text();
+				activate = activate.substring(14, activate.length);
+				activate = "/showParameterWP"+activate+"/"+id;
+			}
+			
 			$.getJSON(activate, function(data) {
 				//Create <div> element for each contained panel
 				var newParameterForm = $(document.createElement("div"));
@@ -591,27 +599,58 @@
 				window.show();
 				focus(window);
 				
-				if(data.panelDataList){
-					for(var i=0; i<data.panelDataList.length; i++) {
-						var panelData = data.panelDataList[i];
-						if(panelData.standardPanelData){
-							var parentForm = $('.standardForms[data-resourceid='+parentPanelName+']');
-							var trComponents = parentForm.find(".inputFormFields tr")
-							var table = $(document.createElement("table"));
-							for(var j=0; j<panelData.standardPanelData.length; j++) {
-								trComponents.each(function(k, item) {
-									var inputComponent = $(item).find('input');
-									if(inputComponent && inputComponent.attr('name') == panelData.standardPanelData[j]){
-										var tr = $(this).clone();
-										table.append(tr);
-									}
-								});
-							}
-							newParameterForm.append(table);
-							
+				var parentForm = $('.standardForms[data-resourceid='+parentPanelName+']');
+				var table = $(document.createElement("table"));
+				
+				if(data.panelData){
+					var panelData = data.panelData;
+					if(panelData.standardPanelData){
+						var trComponents = parentForm.find(".inputFormFields tr");
+						for(var i=0; i<panelData.standardPanelData.length; i++) {
+							var input = panelData.standardPanelData[i];
+							trComponents.each(function(j, item) {
+								var inputComponent = $(item).find('input');
+								if(inputComponent && inputComponent.attr('name') == input.parameterName){
+									var tr = $(this).clone();
+									tr.find('input').val(input.parameterValue);
+									table.append(tr);
+								}
+							});
 						}
 					}
-				}
+					if(panelData.additionalParameters){
+						for(var i=0; i<panelData.additionalParameters.length; i++) {
+							var additionalData = panelData.additionalParameters[i];
+							if(additionalData.parameterType=='Date'){
+								var tr = $(document.createElement("tr"));
+								var tdLabel = $(document.createElement("td"));
+								tdLabel.html(additionalData.parameterName);
+								tr.append(tdLabel);
+								
+								var td = $(document.createElement("td"));
+								var input = $(document.createElement("input"));
+								input.attr('name',additionalData.parameterName);
+								input.datepicker({
+									changeMonth: true,
+									changeYear:  true,
+									dateFormat:  "dd.mm.yy.",
+									yearRange:   "1900:2100"
+								});
+								td.append(input);
+								tr.append(td);
+								table.append(tr);
+							}
+						}
+					}
+				}		
+				newParameterForm.append(table);
+				var cancelButton = $(document.createElement("button"));
+				cancelButton.html('Cancel');
+				cancelButton.addClass('buttons-blue');
+				cancelButton.click(function(e){
+					closeForm(newParameterForm);
+				});
+				newParameterForm.append(cancelButton);
 			});
 				
 		}else {

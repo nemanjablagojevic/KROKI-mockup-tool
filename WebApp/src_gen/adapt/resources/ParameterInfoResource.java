@@ -1,6 +1,11 @@
 package adapt.resources;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 import org.restlet.Context;
 import org.restlet.data.Request;
@@ -15,9 +20,12 @@ import adapt.enumerations.OperationType;
 import adapt.enumerations.PanelType;
 import adapt.exceptions.OperationNotFoundException;
 import adapt.model.ejb.AbstractAttribute;
+import adapt.model.ejb.JoinColumnAttribute;
 import adapt.model.panel.AdaptStandardPanel;
 import adapt.model.panel.configuration.operation.Operation;
+import adapt.util.ejb.PersisenceHelper;
 import adapt.util.enums.ReportParamType;
+import adapt.util.html.TableModel;
 import adapt.util.xml_readers.PanelReader;
 
 /**
@@ -40,19 +48,39 @@ public class ParameterInfoResource extends BaseResource {
 		try{
 			if(panelName != null) {
 				AdaptStandardPanel panel = (AdaptStandardPanel) PanelReader.loadPanel(panelName, PanelType.STANDARDPANEL, null, OpenedAs.DEFAULT);
+				LinkedHashMap<String, String> singleTableData = null;
+				
+				if(dataId!=null){
+					String query = "FROM " + panel.getEntityBean().getEntityClass().getName()+" bean WHERE bean.id="+dataId;
+					EntityManager em = PersisenceHelper.createEntityManager();
+
+					em.getTransaction().begin();
+					Query q = em.createQuery(query);
+					List<Object> results = q.getResultList();
+					
+					TableModel model = new TableModel(panel.getEntityBean());
+					ArrayList<LinkedHashMap<String, String>> tableModel = model.getModel(results);
+					singleTableData = tableModel.get(0);
+				}
 				
 				Operation operation = panel.getStandardOperations().findByName(operationId);
 				if(operation!=null && OperationType.VIEWREPORT.equals(operation.getType())){
 					
-					ArrayList<String> panelDataList = new ArrayList<String>();
+					String panelData = new String();
 					String standardPanelData = "\"standardPanelData\":[";
 					
 					for(AbstractAttribute attr: panel.getEntityBean().getAttributes()){
 						if(operation.getDataFilter()!=null && operation.getDataFilter().containsKey(attr.getLabel())){
 							String parameterType = operation.getDataFilter().get(attr.getLabel());
 							if(ReportParamType.FORM_INPUT.toString().equals(parameterType)){
-								standardPanelData += "\""+attr.getName()+"\""+",";
+								standardPanelData+="{";
+								standardPanelData += "\"parameterName\":\""+attr.getName()+"\""+",";
+								if(singleTableData!=null && singleTableData.containsKey(attr.getName())){
+									String tableData = singleTableData.get(attr.getName());
+									standardPanelData += "\"parameterValue\":\""+tableData+"\"";
+								}
 							}
+							standardPanelData+="},";
 						}
 					}
 					if(standardPanelData.contains(",")){
@@ -60,8 +88,22 @@ public class ParameterInfoResource extends BaseResource {
 					}
 					standardPanelData+="]";
 					
-					panelDataList.add(standardPanelData);
-					addToDataModel("panelDataList", panelDataList);
+					String additionalParameters = "\"additionalParameters\":[";
+					for(String parameterName: operation.getDataFilter().keySet()){
+						String parameterType = operation.getDataFilter().get(parameterName);
+						if(!ReportParamType.FORM_INPUT.toString().equals(parameterType)){
+							additionalParameters+="{\"parameterName\":\""+parameterName+"\",";
+							additionalParameters+="\"parameterType\":\""+parameterType+"\"},";
+						}
+					}
+					if(additionalParameters.endsWith(",")){
+						additionalParameters = additionalParameters.substring(0,additionalParameters.length()-1);
+					}
+					additionalParameters+="]";
+					
+					panelData+="\n{"+standardPanelData+",\n"+additionalParameters+"}";
+					
+					addToDataModel("panelData", panelData);
 					addToDataModel("parentPanelName", "\""+panelName+"\"");
 				}
 			}

@@ -1,14 +1,4 @@
-<#if panelDataList??>
-<#if panelDataList?has_content>
 {
-    "panelDataList": [
-        <#list panelDataList as panel>
-        {
-            ${panel}
-        } <#if (panel_has_next)>,</#if>
-        </#list>
-    ],
+    "panelData": ${panelData},
 	"parentPanelName" : ${parentPanelName}
 }
-</#if>
-</#if>
