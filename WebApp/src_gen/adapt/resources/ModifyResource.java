@@ -64,66 +64,12 @@ public class ModifyResource extends BaseResource{
 		super.handleGet();
 	}
 
-	private LinkedHashMap<String, String> prepareEditMap(EntityBean bean, Object object) {
-		LinkedHashMap<String, String> editMap = new LinkedHashMap<String, String>();
-		LinkedHashMap<String, LinkedHashMap<String, String>> zoomEditMap = new LinkedHashMap<String, LinkedHashMap<String,String>>();
-		Class objectClass = object.getClass();
-
-		for (AbstractAttribute attribute : bean.getAttributes()) {
-			String getName = "get" + Character.toUpperCase(attribute.getFieldName().charAt(0)) + attribute.getFieldName().substring(1);
-			try {
-				if(!attribute.getHidden()) {
-					if(attribute instanceof ColumnAttribute) {
-						ColumnAttribute columnAttribute = (ColumnAttribute)attribute;
-						String className = columnAttribute.getDataType().split(":")[0];
-						Class attributeClass = Class.forName(className);
-						Field field = objectClass.getDeclaredField(columnAttribute.getFieldName());
-						field.setAccessible(true);
-						String value = ConverterUtil.convertForViewing(field.get(object), columnAttribute);
-						System.out.println("[ADDING TO EDIT MAP] " + attribute.getFieldName() + ", " + value);
-						editMap.put(attribute.getFieldName(), value);
-					}else if(attribute instanceof JoinColumnAttribute) {
-						JoinColumnAttribute jcAttribute = (JoinColumnAttribute)attribute;
-						Class jcClass = jcAttribute.getLookupClass();
-						Field field = objectClass.getDeclaredField(jcAttribute.getFieldName());
-						field.setAccessible(true);
-						Object value = field.get(object);
-						//Join column field returns the whole lookup object, so we need to extract just the referenced values
-						LinkedHashMap<String, String> lookupMap = new LinkedHashMap<String, String>();
-						for (ColumnAttribute column : jcAttribute.getColumns()) {
-							try {
-								Field columnField = jcClass.getDeclaredField(column.getFieldName());
-								columnField.setAccessible(true);
-								String columnValue = ConverterUtil.convertForViewing(columnField.get(value), column);
-								lookupMap.put(column.getFieldName(), columnValue);
-							} catch (NullPointerException e) {
-								// e.printStackTrace();
-							} catch (NoSuchFieldError nsfe) {
-								// nsfe.printStackTrace();
-							}
-						}
-						zoomEditMap.put(attribute.getFieldName(), lookupMap);
-					}
-				}
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-				AppCache.displayStackTraceOnMainFrame(e);
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (NoSuchFieldException e) {
-				e.printStackTrace();
-				AppCache.displayStackTraceOnMainFrame(e);
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-				AppCache.displayStackTraceOnMainFrame(e);
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-				AppCache.displayStackTraceOnMainFrame(e);
-			}
-		}
-		addToDataModel("editMap", editMap);
-		addToDataModel("zoomEditMap", zoomEditMap);
-		return editMap;
+	@Override
+	protected LinkedHashMap<String, String> prepareEditMap(EntityBean bean, Object object) {
+		super.prepareEditMap(bean, object);
+		addToDataModel("editMap", this.editMap);
+		addToDataModel("zoomEditMap", this.zoomEditMap);
+		return this.editMap;
 	}
 
 	@Override

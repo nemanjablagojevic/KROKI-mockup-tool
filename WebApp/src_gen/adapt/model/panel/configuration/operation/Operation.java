@@ -68,9 +68,5 @@ public class Operation extends AbstractElement {
 	public Map<String, String> getDataFilter() {
 		return dataFilter;
 	}
-
-	public void setDataFilter(Map<String, String> dataFilter) {
-		this.dataFilter = dataFilter;
-	}
 	
 }

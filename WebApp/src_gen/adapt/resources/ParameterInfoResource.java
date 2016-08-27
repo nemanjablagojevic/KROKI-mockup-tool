@@ -20,6 +20,7 @@ import adapt.enumerations.OperationType;
 import adapt.enumerations.PanelType;
 import adapt.exceptions.OperationNotFoundException;
 import adapt.model.ejb.AbstractAttribute;
+import adapt.model.ejb.ColumnAttribute;
 import adapt.model.ejb.JoinColumnAttribute;
 import adapt.model.panel.AdaptStandardPanel;
 import adapt.model.panel.configuration.operation.Operation;
@@ -48,7 +49,6 @@ public class ParameterInfoResource extends BaseResource {
 		try{
 			if(panelName != null) {
 				AdaptStandardPanel panel = (AdaptStandardPanel) PanelReader.loadPanel(panelName, PanelType.STANDARDPANEL, null, OpenedAs.DEFAULT);
-				LinkedHashMap<String, String> singleTableData = null;
 				
 				if(dataId!=null){
 					String query = "FROM " + panel.getEntityBean().getEntityClass().getName()+" bean WHERE bean.id="+dataId;
@@ -56,11 +56,9 @@ public class ParameterInfoResource extends BaseResource {
 
 					em.getTransaction().begin();
 					Query q = em.createQuery(query);
-					List<Object> results = q.getResultList();
+					Object result = q.getSingleResult();
 					
-					TableModel model = new TableModel(panel.getEntityBean());
-					ArrayList<LinkedHashMap<String, String>> tableModel = model.getModel(results);
-					singleTableData = tableModel.get(0);
+					prepareEditMap(panel.getEntityBean(), result);
 				}
 				
 				Operation operation = panel.getStandardOperations().findByName(operationId);
@@ -70,14 +68,38 @@ public class ParameterInfoResource extends BaseResource {
 					String standardPanelData = "\"standardPanelData\":[";
 					
 					for(AbstractAttribute attr: panel.getEntityBean().getAttributes()){
-						if(operation.getDataFilter()!=null && operation.getDataFilter().containsKey(attr.getLabel())){
-							String parameterType = operation.getDataFilter().get(attr.getLabel());
+						String formattedAttr = "";
+						if(attr instanceof ColumnAttribute){
+							if(!"id".equals(attr.getName())){
+								formattedAttr = attr.getName().substring(3).toUpperCase();
+							}
+						}else if(attr instanceof JoinColumnAttribute){
+							formattedAttr = attr.getName().substring(5).toUpperCase();
+						}
+						if(operation.getDataFilter()!=null && operation.getDataFilter().containsKey(formattedAttr)){
+							String parameterType = operation.getDataFilter().get(formattedAttr);
 							if(ReportParamType.FORM_INPUT.toString().equals(parameterType)){
 								standardPanelData+="{";
-								standardPanelData += "\"parameterName\":\""+attr.getName()+"\""+",";
-								if(singleTableData!=null && singleTableData.containsKey(attr.getName())){
-									String tableData = singleTableData.get(attr.getName());
-									standardPanelData += "\"parameterValue\":\""+tableData+"\"";
+								standardPanelData += "\"parameterName\":\""+attr.getName()+"\"";
+								
+								if(attr instanceof ColumnAttribute){
+									if(this.editMap!=null && this.editMap.containsKey(attr.getName())){
+										String tableData = this.editMap.get(attr.getName());
+										standardPanelData += ", \"parameterValue\":\""+tableData+"\"";
+									}
+								}else if(attr instanceof JoinColumnAttribute){
+									if(this.zoomEditMap!=null && this.zoomEditMap.containsKey(attr.getName())){
+										String tableData="{";
+										LinkedHashMap<String, String> zooms = this.zoomEditMap.get(attr.getName());
+										for(String key: zooms.keySet()){
+											tableData+="\""+key+"\":\""+zooms.get(key)+"\",";
+										}
+										if(tableData.contains(",")){
+											tableData = tableData.substring(0,tableData.length()-1);
+										}
+										tableData+="}";
+										standardPanelData += ", \"parameterValue\":"+tableData;
+									}
 								}
 							}
 							standardPanelData+="},";

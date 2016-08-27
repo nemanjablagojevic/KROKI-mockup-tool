@@ -370,6 +370,9 @@ public class PanelReader {
 									String parameterType = parameter[1].trim();
 									for(int spt=0; spt<ReportParamType.values().length; spt++){
 										if(ReportParamType.values()[spt].toString().equals(parameterType)){
+											if(ReportParamType.FORM_INPUT.toString().equals(parameterType)){
+												parameterName = parameterName.substring(4);
+											}
 											oper.getDataFilter().put(parameterName, parameterType);
 										}
 									}

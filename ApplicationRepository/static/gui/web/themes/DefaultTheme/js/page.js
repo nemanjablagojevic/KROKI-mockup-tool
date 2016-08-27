@@ -600,7 +600,8 @@
 				focus(window);
 				
 				var parentForm = $('.standardForms[data-resourceid='+parentPanelName+']');
-				var table = $(document.createElement("table"));
+				
+				var dataTable = $(document.createElement("table"));
 				
 				if(data.panelData){
 					var panelData = data.panelData;
@@ -612,12 +613,33 @@
 								var inputComponent = $(item).find('input');
 								if(inputComponent && inputComponent.attr('name') == input.parameterName){
 									var tr = $(this).clone();
-									tr.find('input').val(input.parameterValue);
-									table.append(tr);
+									var zoomInputs = tr.find('input.zoomInputs');
+									if(input.parameterValue){
+										if(zoomInputs && zoomInputs.length>0){
+											$(zoomInputs).each(function(zic,item){
+												var attrId = $(item).attr('id');
+												var paramName = attrId.substring(input.parameterName.length+1);
+												var paramValue = input.parameterValue[paramName];
+												if(paramValue){
+													$(item).val(input.parameterValue[paramName]);
+												}
+											});
+										}else{
+											tr.find('input').val(input.parameterValue);
+										}
+									}
+									dataTable.append(tr);
 								}
 							});
 						}
 					}
+					var trSplit = $(document.createElement("tr"));
+					var tdSplit = $(document.createElement("td"));
+					tdSplit.attr('colspan','2');
+					tdSplit.append(document.createElement("hr"));
+					trSplit.append(tdSplit);
+					dataTable.append(trSplit);
+					
 					if(panelData.additionalParameters){
 						for(var i=0; i<panelData.additionalParameters.length; i++) {
 							var additionalData = panelData.additionalParameters[i];
@@ -638,19 +660,37 @@
 								});
 								td.append(input);
 								tr.append(td);
-								table.append(tr);
+								dataTable.append(tr);
 							}
 						}
 					}
 				}		
-				newParameterForm.append(table);
+					
+				var operationTable = $(document.createElement("table"));
+				var tr = $(document.createElement("tr"));	
+				var td = $(document.createElement("td"));
 				var cancelButton = $(document.createElement("button"));
 				cancelButton.html('Cancel');
+				cancelButton.attr('style','width:150px;');
 				cancelButton.addClass('buttons-blue');
 				cancelButton.click(function(e){
 					closeForm(newParameterForm);
 				});
-				newParameterForm.append(cancelButton);
+				td.append(cancelButton);
+				tr.append(td);
+				operationTable.append(tr);
+				
+				var wrapperTable = $(document.createElement("table"));
+				var trWrap = $(document.createElement("tr"));
+				var td1Wrap = $(document.createElement("td"));
+				var td2Wrap = $(document.createElement("td"));
+				td1Wrap.append(dataTable);
+				td2Wrap.append(operationTable);
+				trWrap.append(td1Wrap);
+				trWrap.append(td2Wrap);
+				wrapperTable.append(trWrap);
+				
+				newParameterForm.append(wrapperTable);
 			});
 				
 		}else {
