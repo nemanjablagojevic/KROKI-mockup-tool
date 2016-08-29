@@ -458,13 +458,13 @@
 				transferBtn.attr("src", "/files/images/icons-white/next-forms.png");
 				transferBtn.attr("style","color: #fff; font-weight: bold; width: 30px; height: 30px;");
 				
-				var removeConnectionBtn = $(document.createElement("img"));
+				/*var removeConnectionBtn = $(document.createElement("img"));
 				removeConnectionBtn.attr("id", "img-removeConnection");
 				removeConnectionBtn.attr("class", "removeConnection toolbarButton");
 				removeConnectionBtn.attr("src", "/files/images/icons-white/delete.png");
-				removeConnectionBtn.attr("style","color: #fff; font-weight: bold; width: 30px; height: 30px;");
+				removeConnectionBtn.attr("style","color: #fff; font-weight: bold; width: 30px; height: 30px;");*/
 				
-				newWindowBody.append(transferBtn).append(removeConnectionBtn);
+				newWindowBody.append(transferBtn);
 				
 				//newWindowBody.append(transferComponent);
 				
@@ -605,6 +605,22 @@
 				
 				var dataTable = $(document.createElement("table"));
 				
+				var trZoom = $(document.createElement("tr"));
+				var tdZoom = $(document.createElement("td"));
+				tdZoom.attr('colspan','2');
+				var a = $(document.createElement("a"));
+				a.attr('href','#');
+				a.attr('data-resourceid',parentPanelName);
+				a.attr('data-activate',"/showChildren/"+parentPanelName+"/");
+				a.attr('data-paneltype','next-panel');
+				a.attr('data-labelclean','LINK_1');
+				a.html('LINK_1');
+				a.addClass('panelLinks activator');
+				tdZoom.append(a);
+				trZoom.append(tdZoom);
+				dataTable.append(trZoom);
+				
+				
 				if(data.panelData){
 					var panelData = data.panelData;
 					if(panelData.standardPanelData){
@@ -731,18 +747,6 @@
 				}		
 					
 				var operationTable = $(document.createElement("table"));
-				var tr = $(document.createElement("tr"));	
-				var td = $(document.createElement("td"));
-				var cancelButton = $(document.createElement("button"));
-				cancelButton.html('Cancel');
-				cancelButton.attr('style','width:150px;');
-				cancelButton.addClass('buttons-blue');
-				cancelButton.click(function(e){
-					closeForm(newParameterForm);
-				});
-				td.append(cancelButton);
-				tr.append(td);
-				operationTable.append(tr);
 				
 				var tr1 = $(document.createElement("tr"));	
 				var td1 = $(document.createElement("td"));
@@ -801,7 +805,7 @@
 						$("#messagePopup").prepend("<div></div>");
 						$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
 						var pdfURI = ""
-						window.open('/static/' + reportName + '.pdf', '_blank');
+						window.open('/static/' + reportName + '.pdf?dummy='+(new Date()).getTime(), '_blank');
 					},
 					error: function(XMLHttpRequest, textStatus, errorThrown) { 
 						$("#messagePopup").html("<p>" + errorThrown + "</p>");
@@ -814,6 +818,19 @@
 				td1.append(okButton);
 				tr1.append(td1);
 				operationTable.append(tr1);
+				
+				var tr = $(document.createElement("tr"));	
+				var td = $(document.createElement("td"));
+				var cancelButton = $(document.createElement("button"));
+				cancelButton.html('Cancel');
+				cancelButton.attr('style','width:150px;');
+				cancelButton.addClass('buttons-blue');
+				cancelButton.click(function(e){
+					closeForm(newParameterForm);
+				});
+				td.append(cancelButton);
+				tr.append(td);
+				operationTable.append(tr);
 				
 				var wrapperTable = $(document.createElement("table"));
 				var trWrap = $(document.createElement("tr"));
@@ -1158,7 +1175,7 @@
 						$("#messagePopup").prepend("<div></div>");
 						$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
 						var pdfURI = ""
-						window.open('/static/' + resourceid + '.pdf', '_blank');
+						window.open('/static/' + resourceid + '.pdf?dummy='+(new Date()).getTime(), '_blank');
 					},
 					error: function(XMLHttpRequest, textStatus, errorThrown) { 
 						$("#messagePopup").html("<p>" + errorThrown + "</p>");
@@ -1290,24 +1307,46 @@
 		var tableDiv = $(this).closest('.standardForms').find('.tableDiv');
 		var selectedRow = tableDiv.find(".mainTable tbody tr.selectedTr");
 		
+		var id = selectedRow.find("#idCell").text();
+		var resourceid =  selectedRow.find('td')[1].textContent;					
+		var link = "printForm?names=*&resource=" + resourceid;
+		
 		if(selectedRow.length > 0) {
-                var id = selectedRow.find("#idCell").text();
-				var resourceid =  selectedRow.find('td')[1].textContent;					
-				var link = "printForm?names=*&resource=" + resourceid;
 				$.ajax({
-					url: link,
+					url: "/getReportOperation/"+resourceid,
 					type: 'GET',
 					encoding:"UTF-8",
 					contentType: "text/html; charset=UTF-8",
-					success: function(data) {
-						console.log("RESPONSE: " + data)
-						$("#messagePopup").html(data);
-						var clas = $("#messagePopup").find("p").attr("data-cssClass");
-						$("#messagePopup").attr("class", clas);
-						$("#messagePopup").prepend("<div></div>");
-						$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
-						var pdfURI = ""
-						window.open('/static/' + resourceid + '.pdf', '_blank');
+					success: function(dataOper) {
+						if(dataOper){
+							makeNewWindow('/show/'+resourceid+'/', resourceid, 'next-panel', false, null, null, resourceid);
+							makeNewWindow('/showParameter/'+resourceid+'/'+dataOper, 'Parameter form - '+resourceid, 'PARAMETERPANEL', false, null, null, resourceid);
+							setTimeout(function(){ closeForm($('.standardForms[data-resourceid='+resourceid+']')); }, 200);
+							 
+						}else{
+							$.ajax({
+								url: link,
+								type: 'GET',
+								encoding:"UTF-8",
+								contentType: "text/html; charset=UTF-8",
+								success: function(data) {
+									console.log("RESPONSE: " + data)
+									$("#messagePopup").html(data);
+									var clas = $("#messagePopup").find("p").attr("data-cssClass");
+									$("#messagePopup").attr("class", clas);
+									$("#messagePopup").prepend("<div></div>");
+									$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+									var pdfURI = ""
+									window.open('/static/' + resourceid + '.pdf?dummy='+(new Date()).getTime(), '_blank');
+								},
+								error: function(XMLHttpRequest, textStatus, errorThrown) { 
+									$("#messagePopup").html("<p>" + errorThrown + "</p>");
+									$("#messagePopup").attr("class", "messageError");
+									$("#messagePopup").prepend("<div></div>");
+									$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+								}
+							});
+						}
 					},
 					error: function(XMLHttpRequest, textStatus, errorThrown) { 
 						$("#messagePopup").html("<p>" + errorThrown + "</p>");
@@ -1315,8 +1354,7 @@
 						$("#messagePopup").prepend("<div></div>");
 						$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
 					}
-				});
-					
+				});	
 		} else {
 			alert("Please select one row to print.")
 		}

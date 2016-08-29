@@ -13,6 +13,7 @@ import org.restlet.data.LocalReference;
 
 import adapt.resources.AddResource;
 import adapt.resources.DeleteResource;
+import adapt.resources.GetReportOperationResource;
 import adapt.resources.GetZoomsResource;
 import adapt.resources.HomeResource;
 import adapt.resources.IndexResource;
@@ -126,6 +127,7 @@ public class AdaptApplication extends Application {
 		router.attach("/homepage", HomeResource.class);
 		router.attach("/show/{activate}", ViewResource.class);
 		router.attach("/showParameter/{panelName}/{operationId}", ParameterInfoResource.class);
+		router.attach("/getReportOperation/{panelName}", GetReportOperationResource.class);
 		router.attach("/showParameterWP/{panelName}/{operationId}/{dataId}", ParameterInfoResource.class);
 		router.attach("/showWP/{activate}/{filter}", ViewResource.class);
 		router.attach("/showChildren/{childPanelName}/{associationEnd}/{pid}", ViewResource.class);
