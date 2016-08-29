@@ -1,4 +1,5 @@
 {
     "panelData": ${panelData},
-	"parentPanelName" : ${parentPanelName}
+	"parentPanelName" : ${parentPanelName},
+	"reportName" : ${reportName}
 }

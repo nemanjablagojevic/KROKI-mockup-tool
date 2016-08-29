@@ -318,6 +318,9 @@ public class PanelGenerator {
 								}
 								if(vo instanceof Report){
 									Report report = (Report)vo;
+									Attr refPanelAttr = doc.createAttribute("ref-panel");
+									refPanelAttr.setValue(panel.getPersistentClass().name().toLowerCase() + "_st");
+									opTag.setAttributeNode(refPanelAttr);
 									if(report.getReportName()!=null){
 										Attr reportNameAttr = doc.createAttribute("report-name");
 										reportNameAttr.setValue(report.getReportName());

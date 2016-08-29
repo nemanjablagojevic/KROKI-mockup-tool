@@ -15,6 +15,7 @@ public class Operation extends AbstractElement {
 	protected Boolean allowed = true;
 	protected String target;
 	protected String parentGroup;
+	protected String reportName;
 	protected Map<String,String> dataFilter = new HashMap<String,String>();
 	
 	public void add(Parameter p) {
@@ -67,6 +68,14 @@ public class Operation extends AbstractElement {
 
 	public Map<String, String> getDataFilter() {
 		return dataFilter;
+	}
+
+	public String getReportName() {
+		return reportName;
+	}
+
+	public void setReportName(String reportName) {
+		this.reportName = reportName;
 	}
 	
 }

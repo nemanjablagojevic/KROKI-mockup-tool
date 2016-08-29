@@ -592,12 +592,14 @@
 				newParameterForm.attr("id", generateUUID());
 				newParameterForm.attr("data-activate", activate);
 				var parentPanelName = data.parentPanelName;
+				var reportName = data.reportName;
 				
 				newParameterForm.attr("data-parameterresourceid", parentPanelName);
+				newParameterForm.attr("data-reportName", reportName);
 				newWindowBody.append(newParameterForm);
-				var window = newParameterForm.closest(".windows");
-				window.show();
-				focus(window);
+				var windowVar = newParameterForm.closest(".windows");
+				windowVar.show();
+				focus(windowVar);
 				
 				var parentForm = $('.standardForms[data-resourceid='+parentPanelName+']');
 				
@@ -623,11 +625,18 @@
 												if(paramValue){
 													$(item).val(input.parameterValue[paramName]);
 												}
+												
 											});
 										}else{
-											tr.find('input').val(input.parameterValue);
+											if(tr.find('input[name]').attr('type')=='checkbox'){
+												tr.find('input').val(input.parameterValue=='Yes');
+												tr.find('input').prop('checked', input.parameterValue=='Yes');
+											}else{
+												tr.find('input').val(input.parameterValue);
+											}
 										}
 									}
+									tr.find('input').addClass('standardPanelData');
 									dataTable.append(tr);
 								}
 							});
@@ -658,6 +667,61 @@
 									dateFormat:  "dd.mm.yy.",
 									yearRange:   "1900:2100"
 								});
+								input.addClass('additionalPanelData');
+								input.attr('data-type',additionalData.parameterType);
+								td.append(input);
+								tr.append(td);
+								dataTable.append(tr);
+							} else if(additionalData.parameterType=='String' || additionalData.parameterType=='Integer' || additionalData.parameterType=='Decimal'){
+								var tr = $(document.createElement("tr"));
+								var tdLabel = $(document.createElement("td"));
+								tdLabel.html(additionalData.parameterName);
+								tr.append(tdLabel);
+								
+								var td = $(document.createElement("td"));
+								var input = $(document.createElement("input"));
+								input.attr('name',additionalData.parameterName);
+								input.addClass('additionalPanelData');
+								input.attr('data-type',additionalData.parameterType);
+								if(additionalData.parameterType=="Integer" || additionalData.parameterType=="Decimal") {
+									$(input).keydown(function(event){
+										if (event.shiftKey == true) {
+											event.preventDefault();
+										}
+
+										if ((event.keyCode >= 48 && event.keyCode <= 57) || 
+											(event.keyCode >= 96 && event.keyCode <= 105) || 
+											event.keyCode == 8 || event.keyCode == 9 || event.keyCode == 37 ||
+											event.keyCode == 39 || event.keyCode == 46 || event.keyCode == 190) {
+
+										} else {
+											event.preventDefault();
+										}
+										if($(this).attr('data-type')=="Decimal"){
+											if($(this).val().indexOf('.') !== -1 && event.keyCode == 190)
+												event.preventDefault(); 
+										}else{
+											if(event.keyCode == 190){
+												event.preventDefault();
+											}
+										}
+									});
+								}
+								td.append(input);
+								tr.append(td);
+								dataTable.append(tr);
+							}else if(additionalData.parameterType=='Boolean'){
+								var tr = $(document.createElement("tr"));
+								var tdLabel = $(document.createElement("td"));
+								tdLabel.html(additionalData.parameterName);
+								tr.append(tdLabel);
+								
+								var td = $(document.createElement("td"));
+								var input = $(document.createElement("input"));
+								input.attr('name',additionalData.parameterName);
+								input.addClass('additionalPanelData');
+								input.attr('data-type',additionalData.parameterType);
+								input.attr('type','checkbox');
 								td.append(input);
 								tr.append(td);
 								dataTable.append(tr);
@@ -679,6 +743,77 @@
 				td.append(cancelButton);
 				tr.append(td);
 				operationTable.append(tr);
+				
+				var tr1 = $(document.createElement("tr"));	
+				var td1 = $(document.createElement("td"));
+				var okButton = $(document.createElement("button"));
+				okButton.html('Ok');
+				okButton.attr('style','width:150px;');
+				okButton.addClass('buttons-blue');
+				okButton.click(function(e){
+					var link = '/operationPrintForm';
+					link+='/'+reportName;
+					var standardPanelData = dataTable.find("input[name].standardPanelData");
+					var standardReportData = "";
+					$(standardPanelData).each(function(i,item){
+						if($(item).attr('type')!='hidden'){
+							var name = $(item).attr('name');
+							var value = $(item).val();
+							if($(item).attr('type')=='checkbox'){
+								value = $(item).prop('checked');
+							}
+							standardReportData += name+","+value+";";
+						}
+					});
+					if(!standardReportData){
+						standardReportData=";";
+					}
+					link+='/'+standardReportData;
+					
+					var additionalData = dataTable.find("input.additionalPanelData");
+					var additionalReportData="";
+					$(additionalData).each(function(i,item){
+						if($(item).attr('type')!='hidden'){
+							var name = $(item).attr('name');
+							var value = $(item).val();
+							if($(item).attr('type')=='checkbox'){
+								value = $(item).prop('checked');
+							}
+							var dataType = $(item).attr('data-type');
+							additionalReportData += name+","+value+","+dataType+";";
+						}
+					});
+					if(!additionalReportData){
+						additionalReportData=";";
+					}
+					link+='/'+additionalReportData;
+					
+					$.ajax({
+					url: link,
+					type: 'GET',
+					encoding:"UTF-8",
+					contentType: "text/html; charset=UTF-8",
+					success: function(data) {
+						console.log("RESPONSE: " + data)
+						$("#messagePopup").html(data);
+						var clas = $("#messagePopup").find("p").attr("data-cssClass");
+						$("#messagePopup").attr("class", clas);
+						$("#messagePopup").prepend("<div></div>");
+						$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+						var pdfURI = ""
+						window.open('/static/' + reportName + '.pdf', '_blank');
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown) { 
+						$("#messagePopup").html("<p>" + errorThrown + "</p>");
+						$("#messagePopup").attr("class", "messageError");
+						$("#messagePopup").prepend("<div></div>");
+						$("#messagePopup").slideToggle(300).delay(delay).slideToggle(500);
+					}
+				});
+				});
+				td1.append(okButton);
+				tr1.append(td1);
+				operationTable.append(tr1);
 				
 				var wrapperTable = $(document.createElement("table"));
 				var trWrap = $(document.createElement("tr"));

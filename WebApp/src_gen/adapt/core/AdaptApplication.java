@@ -18,6 +18,7 @@ import adapt.resources.HomeResource;
 import adapt.resources.IndexResource;
 import adapt.resources.ManyToManyInfoResource;
 import adapt.resources.ModifyResource;
+import adapt.resources.OperationPrintResource;
 import adapt.resources.ParameterInfoResource;
 import adapt.resources.ParentChildInfoResource;
 import adapt.resources.PrintResource;
@@ -137,6 +138,7 @@ public class AdaptApplication extends Application {
 		router.attach("/getInfoMTM/{mtmPanel}/{zoomId}", ManyToManyInfoResource.class);
 		router.attach("/getZooms/{panelName}/{zoomName}/{zid}", GetZoomsResource.class);
 		router.attach("/printForm", PrintResource.class);
+		router.attach("/operationPrintForm/{reportName}/{standardReportData}/{additionalReportData}", OperationPrintResource.class);
 		
 		return router;
 	}

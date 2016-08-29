@@ -2,8 +2,10 @@ package adapt.util.enums;
 
 public enum ReportParamType {
 	FORM_INPUT("FormInput"),
+    BOOLEAN("Boolean"),
     DATE("Date"),
     INTEGER("Integer"),
+    DECIMAL("Decimal"),
     STRING("String");
 
     private final String text;

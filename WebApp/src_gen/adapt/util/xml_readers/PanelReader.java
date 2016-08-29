@@ -349,8 +349,12 @@ public class PanelReader {
 			String type = elemOperation.getAttribute(Tags.DATA_TYPE);
 			if (type.equals("report"))
 				oper.setType(OperationType.VIEWREPORT);
-				if(elemOperation.hasAttribute("report-name")){
-					String reportName = elemOperation.getAttribute("report-name");
+				if(elemOperation.hasAttribute("ref-panel")){
+					if(elemOperation.hasAttribute("report-name")){
+						String reportName = elemOperation.getAttribute("report-name");
+						oper.setReportName(reportName);
+					}
+
 					if(elemOperation.hasAttribute("data-filter")){
 						String dataFilter = elemOperation.getAttribute("data-filter");
 						

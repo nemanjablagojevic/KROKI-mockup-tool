@@ -85,6 +85,9 @@ public class ParameterInfoResource extends BaseResource {
 								if(attr instanceof ColumnAttribute){
 									if(this.editMap!=null && this.editMap.containsKey(attr.getName())){
 										String tableData = this.editMap.get(attr.getName());
+//										if(Boolean.class.getCanonicalName().equals(((ColumnAttribute) attr).getDataType())){
+//											tableData="Yes".equals(tableData)?Boolean.TRUE.toString():Boolean.FALSE.toString();
+//										}
 										standardPanelData += ", \"parameterValue\":\""+tableData+"\"";
 									}
 								}else if(attr instanceof JoinColumnAttribute){
@@ -125,6 +128,7 @@ public class ParameterInfoResource extends BaseResource {
 					
 					panelData+="\n{"+standardPanelData+",\n"+additionalParameters+"}";
 					
+					addToDataModel("reportName", "\""+operation.getReportName()+"\"");
 					addToDataModel("panelData", panelData);
 					addToDataModel("parentPanelName", "\""+panelName+"\"");
 				}
