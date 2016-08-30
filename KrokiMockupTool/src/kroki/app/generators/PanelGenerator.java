@@ -112,11 +112,24 @@ public class PanelGenerator {
 					stdPanel.setAttributeNode(ejbRefAttr);
 					
 					if(element instanceof ReportPanel){
-					Attr reportPanelAttr = doc.createAttribute("reportPanel");
+						Attr reportPanelAttr = doc.createAttribute("reportPanel");
 						reportPanelAttr.setValue(Boolean.TRUE.toString());
 						stdPanel.setAttributeNode(reportPanelAttr);
+						
+						String reportList = "";
+						for(int j=0; j<elements.size(); j++){
+							VisibleElement stdElement = elements.get(j);
+							if(stdElement instanceof StandardPanel && !(stdElement instanceof ReportPanel)){
+								reportList+=((StandardPanel)stdElement).getPersistentClass().name().toLowerCase() + "_st"+",";
+							}
+						}
+						if(reportList.contains(",")){
+							reportList = reportList.substring(0,reportList.length()-1);
+						}
+						Attr reportListAttr = doc.createAttribute("reportList");
+						reportListAttr.setValue(reportList);
+						stdPanel.setAttributeNode(reportListAttr);
 					}
-					
 					
 					//generisanje <settings> taga for standardni panel
 					Element eSettings = doc.createElement("settings");

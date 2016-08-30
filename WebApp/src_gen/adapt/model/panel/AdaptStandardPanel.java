@@ -21,6 +21,7 @@ public class AdaptStandardPanel extends AdaptPanel {
 	protected List<Next> nextPanels = new ArrayList<Next>();
 	protected List<Zoom> zoomPanels = new ArrayList<Zoom>();
 	protected Boolean reportPanel;
+	protected List<String> reportList = new ArrayList<String>();
 	
 	public EntityBean getEntityBean() {
 		return entityBean;
@@ -75,6 +76,12 @@ public class AdaptStandardPanel extends AdaptPanel {
 	}
 	public void setReportPanel(Boolean reportPanel) {
 		this.reportPanel = reportPanel;
+	}
+	public List<String> getReportList() {
+		return reportList;
+	}
+	public void setReportList(List<String> reportList) {
+		this.reportList = reportList;
 	}
 	
 }

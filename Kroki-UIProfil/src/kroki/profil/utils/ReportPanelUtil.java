@@ -4,6 +4,7 @@ import java.awt.TextField;
 
 import javax.swing.JLabel;
 
+import kroki.commons.camelcase.NamingUtil;
 import kroki.mockup.model.Composite;
 import kroki.mockup.model.components.Button;
 import kroki.mockup.model.components.Panel;
@@ -64,6 +65,23 @@ public class ReportPanelUtil {
        ((Composite) panel.getOperationsPanel().getComponent()).setLayoutManager(operationsLayout);
        ((Composite) panel.getOperationsPanel().getComponent()).setLocked(true);
 
+       panel.setAdd(false);
+       panel.setCopy(false);
+       panel.setDelete(false);
+       panel.setUpdate(false);
+       panel.setChangeMode(false);
+       
+       TextField tfReportCode = new TextField();
+       tfReportCode.setName("Report code");
+       VisibleProperty tfRC = new VisibleProperty(tfReportCode.getName(), true, ComponentType.TEXT_FIELD);
+       tfRC.setName("Report code");
+       tfRC.setLabel("Report code");
+       tfRC.setUmlClass(panel);
+       tfRC.setLabelToCode(true);
+       tfRC.setPersistentType("Varchar");
+       ElementsGroupUtil.addVisibleElement(panel.getPropertiesPanel(), tfRC);
+       UIPropertyUtil.addVisibleElement(panel, tfRC);
+       
        
        ElementsGroup reportPanel = new ElementsGroup("Slanje izvestaja", ComponentType.PANEL);
        reportPanel.setLabel("Slanje izvestaja");

@@ -185,15 +185,12 @@ public class OperationPrintResource extends BaseResource {
 		    	}
 		    }
 		}
-		AppCache.displayTextOnMainFrame("QUERY: " + query, 0);
 		
 		EntityManager em = PersisenceHelper.createEntityManager();
 
 		em.getTransaction().begin();
 		Query q = em.createQuery(query);
 		List<Object> results = q.getResultList();
-		
-		AppCache.displayTextOnMainFrame("QUERY RESULT SIZE: " + results.size(), 0);
 		
 		TableModel model = new TableModel(panel.getEntityBean());
 		

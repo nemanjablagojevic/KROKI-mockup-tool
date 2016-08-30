@@ -3,6 +3,7 @@ package adapt.util.xml_readers;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.w3c.dom.Document;
@@ -106,8 +107,9 @@ public class PanelReader {
 				AppCache.displayTextOnMainFrame("Error reading panel data for name: " + panelId, 1);
 				AppCache.displayStackTraceOnMainFrame(e);
 			}
+			return panel;
 		}
-		return panel;
+		
 	}
 
 	private static AdaptStandardPanel findStandardPanel(Document document, String panelId) {
@@ -119,6 +121,13 @@ public class PanelReader {
 			if(id.equals(panelId)) {
 				String ejbRef = stdPanelElement.getAttribute(Tags.EJB_REF);
 				String reportPanel = stdPanelElement.getAttribute(Tags.REPORT_PANEL);
+				List<String> reportList = null;
+				if(stdPanelElement.hasAttribute("reportList")){
+					String reportListParam = stdPanelElement.getAttribute("reportList");
+					if(!reportListParam.isEmpty()){
+						reportList = Arrays.asList(reportListParam.split(","));
+					}
+				}
 				EntityBean bean = EntityReader.load(ejbRef) ;
 				if(bean == null) {
 					return null;
@@ -128,6 +137,7 @@ public class PanelReader {
 				stdPanel = new AdaptStandardPanel();
 				stdPanel.setName(id);
 				stdPanel.setReportPanel(Boolean.TRUE.toString().equals(reportPanel));
+				stdPanel.setReportList(reportList);
 				stdPanel.setEntityBean(bean);
 				stdPanel.setLabel(bean.getLabel());
 				stdPanel.setPanelSettings(getSettings(stdPanelElement, new PanelSettings()));

@@ -8,6 +8,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.restlet.Context;
+import org.restlet.data.Form;
+import org.restlet.data.Parameter;
 import org.restlet.data.Request;
 import org.restlet.data.Response;
 import org.restlet.resource.Representation;
@@ -15,12 +17,14 @@ import org.restlet.resource.ResourceException;
 import org.restlet.resource.Variant;
 
 import adapt.aspects.SessionAspect;
+import adapt.core.AdaptApplication;
 import adapt.core.AppCache;
 import adapt.enumerations.OpenedAs;
 import adapt.enumerations.PanelType;
 import adapt.exceptions.EntityAttributeNotFoundException;
 import adapt.model.AbstractElement;
 import adapt.model.ejb.AbstractAttribute;
+import adapt.model.ejb.ColumnAttribute;
 import adapt.model.ejb.EntityBean;
 import adapt.model.ejb.JoinColumnAttribute;
 import adapt.model.panel.AdaptManyToManyPanel;
@@ -35,7 +39,6 @@ import adapt.util.ejb.PersisenceHelper;
 import adapt.util.html.HTMLToolbarAction;
 import adapt.util.html.OperationGroup;
 import adapt.util.html.TableModel;
-import adapt.util.resolvers.PanelTypeResolver;
 import adapt.util.xml_readers.PanelReader;
 import ejb.AdaptPermission;
 import ejb.AdaptRole;
@@ -66,6 +69,44 @@ public class ViewResource extends BaseResource {
 				AdaptPanel panel = PanelReader.loadPanel(panelName, panelType, null, OpenedAs.DEFAULT);
 				if(panelType == PanelType.STANDARDPANEL) {
 					AdaptStandardPanel stdPanel = (AdaptStandardPanel) panel;
+					if(stdPanel.getReportPanel()){
+						if(stdPanel.getReportList()!=null){
+							for(String reportName: stdPanel.getReportList()){
+								boolean hasReport = false;
+								String checkQuery = "FROM " + stdPanel.getEntityBean().getEntityClass().getName()+" bean WHERE bean.ka_report_code='"+reportName+"'";
+								EntityManager em = PersisenceHelper.createEntityManager();
+
+								em.getTransaction().begin();
+								Query q = em.createQuery(checkQuery);
+								List<Object> results = q.getResultList();
+								if(results!=null && results.size()>0){
+									hasReport = true;
+								}
+								em.close();
+								
+								if(!hasReport){
+									AddResource addResource = new AddResource(getContext(), getRequest(), getResponse());
+									Form form = new Form();
+									for(AbstractAttribute attr: stdPanel.getEntityBean().getAttributes()){
+										if(attr instanceof ColumnAttribute){
+											ColumnAttribute ca = (ColumnAttribute)attr;
+											if(ca.getMandatory() && !"id".equals(ca.getName()) || "ka_report_code".equals(ca.getName())){
+												Parameter parameter = new Parameter();
+												parameter.setName(attr.getName());
+												parameter.setValue(reportName);
+												form.add(parameter);
+											}
+										}
+										
+									}
+									if(form.size()>0){
+										addResource.bean = stdPanel.getEntityBean();
+										addResource.add(form, null);
+									}
+								}
+							}
+						}
+					}
 					String query = "FROM " + stdPanel.getEntityBean().getEntityClass().getName()+" bean";
 					if(filter!=null){
 						String[] filterPart = filter.split("=");

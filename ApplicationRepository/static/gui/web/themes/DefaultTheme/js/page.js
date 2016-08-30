@@ -1321,7 +1321,7 @@
 						if(dataOper){
 							makeNewWindow('/show/'+resourceid+'/', resourceid, 'next-panel', false, null, null, resourceid);
 							makeNewWindow('/showParameter/'+resourceid+'/'+dataOper, 'Parameter form - '+resourceid, 'PARAMETERPANEL', false, null, null, resourceid);
-							setTimeout(function(){ closeForm($('.standardForms[data-resourceid='+resourceid+']')); }, 200);
+							setTimeout(function(){ closeForm($('.standardForms[data-resourceid='+resourceid+']')); }, 300);
 							 
 						}else{
 							$.ajax({
