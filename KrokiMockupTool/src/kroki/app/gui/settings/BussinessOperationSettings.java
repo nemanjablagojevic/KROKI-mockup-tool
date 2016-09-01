@@ -2,6 +2,10 @@ package kroki.app.gui.settings;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -15,6 +19,7 @@ import javax.swing.JTextField;
 import kroki.intl.Intl;
 import kroki.profil.VisibleElement;
 import kroki.profil.operation.BussinessOperation;
+import kroki.profil.operation.Report;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -28,10 +33,14 @@ public class BussinessOperationSettings extends VisibleElementSettings {
 	protected JLabel hasParamsFormLb;
 	protected JLabel filteredByKeyLb;
 	protected JLabel persistentOperationLb;
+	protected JLabel standardParameterValuesLb;
+	protected JLabel additionalParameterValuesLb;
 	protected JCheckBox hasParamsFormCb;
 	protected JCheckBox filteredByKeyCb;
 	protected JTextField persistentOperationTf;
 	protected JButton persistentOperationBtn;
+	protected StandardReportParameterValuesPanel standardParameterValuesPanel;
+	protected AdditionalReportParameterValuesPanel additionalParameterValuesPanel;
 
     public BussinessOperationSettings(SettingsCreator settingsCreator) {
         super(settingsCreator);
@@ -51,6 +60,14 @@ public class BussinessOperationSettings extends VisibleElementSettings {
         persistentOperationBtn = new JButton("...");
         persistentOperationBtn.setPreferredSize(new Dimension(30, 20));
         persistentOperationBtn.setMinimumSize(persistentOperationBtn.getPreferredSize());
+        standardParameterValuesLb = new JLabel("Standard parameters");
+        standardParameterValuesPanel = new StandardReportParameterValuesPanel(this, (Report) visibleElement);
+        standardParameterValuesPanel.setReport((Report)visibleElement);
+        standardParameterValuesPanel.setFont(this.getFont());
+        additionalParameterValuesLb = new JLabel("Additional parameters");
+        additionalParameterValuesPanel = new AdditionalReportParameterValuesPanel(this, (Report) visibleElement);
+        additionalParameterValuesPanel.setReport((Report)visibleElement);
+        additionalParameterValuesPanel.setFont(this.getFont());
     }
 
     private void layoutComponents() {
@@ -72,9 +89,36 @@ public class BussinessOperationSettings extends VisibleElementSettings {
         intermediate.add(persistentOperationLb);
         intermediate.add(persistentOperationTf, "split 2, grow");
         intermediate.add(persistentOperationBtn, "shrink");
+        if(standardParameterValuesPanel!=null){
+        	intermediate.add(standardParameterValuesLb);
+        	intermediate.add(standardParameterValuesPanel, "height ::100");
+        }
+        if(additionalParameterValuesPanel!=null){
+        	intermediate.add(additionalParameterValuesLb);
+        	intermediate.add(additionalParameterValuesPanel, "height ::100");
+        }
+        
     }
 
     private void addActions() {
+    	if(additionalParameterValuesPanel!=null){
+	    	additionalParameterValuesPanel.addFocusListener(new FocusListener() {
+				@Override
+				public void focusLost(FocusEvent arg0) {
+					Report report = (Report) visibleElement;
+					Set<String> standardParameters = standardParameterValuesPanel.getValues();
+					report.setStandardParameters(standardParameters);
+					Map<String,String> additionalValues = additionalParameterValuesPanel.getValues();
+					report.setAdditionalParameters(additionalValues);
+					updatePreformed();
+				}
+				
+				@Override
+				public void focusGained(FocusEvent arg0) {
+				}
+			});
+    	}
+    	
         hasParamsFormCb.addActionListener(new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {
@@ -115,12 +159,36 @@ public class BussinessOperationSettings extends VisibleElementSettings {
         if (bussinessOperation.getPersistentOperation() != null) {
             persistentOperationValue = bussinessOperation.getPersistentOperation().toString();
         }
+        if(bussinessOperation instanceof Report){
+        	Report report = (Report) bussinessOperation;
+        	if(report.getStandardParameters() != null) {
+            	standardParameterValuesPanel.setReport(report);
+            }
+        	if(report.getAdditionalParameters() != null) {
+            	additionalParameterValuesPanel.setReport(report);
+            }
+        }
+        
         persistentOperationTf.setText(persistentOperationValue);
     }
 
     @Override
     public void updateSettings(VisibleElement visibleElement) {
         super.updateSettings(visibleElement);
+        if(visibleElement instanceof Report) {
+        	Report report = (Report) visibleElement;
+        	standardParameterValuesPanel.setReport(report);
+        	standardParameterValuesLb.setVisible(true);
+        	standardParameterValuesPanel.setVisible(true);
+            additionalParameterValuesPanel.setReport(report);
+        	additionalParameterValuesLb.setVisible(true);
+        	additionalParameterValuesPanel.setVisible(true);
+        }else{
+        	standardParameterValuesLb.setVisible(false);
+        	standardParameterValuesPanel.setVisible(false);
+        	additionalParameterValuesLb.setVisible(false);
+        	additionalParameterValuesPanel.setVisible(false);
+        }
     }
 
     @Override

@@ -7,8 +7,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -149,7 +152,7 @@ public class OperationPrintResource extends BaseResource {
 		}
 	}
 	
-	private void buildPDFTable(AdaptStandardPanel panel, Map<String, String> standardReportDataValues, Map<String, String[]> additionalReportDataValues, Paragraph tableParagraph) throws UnsupportedEncodingException {
+	private void buildPDFTable(AdaptStandardPanel panel, Map<String, String> standardReportDataValues, Map<String, String[]> additionalReportDataValues, Paragraph tableParagraph) throws UnsupportedEncodingException, ParseException {
 		
 		EntityBean bean = panel.getEntityBean();
 		PdfPTable table = new PdfPTable(bean.getAttributes().size());
@@ -167,15 +170,18 @@ public class OperationPrintResource extends BaseResource {
 		    	if(attribute instanceof ColumnAttribute){
 		    		String attributeValue = standardReportDataValues.get(attribute.getName());
 		    		ColumnAttribute ca = (ColumnAttribute) attribute;
-		    		if(String.class.getCanonicalName().equals(ca.getDataType())){
-		    			attributeValue = "'"+URLDecoder.decode(attributeValue, "UTF-8")+"'";
-		    		}
-		    		if(Boolean.class.getCanonicalName().equals(ca.getDataType())){
-		    			attributeValue = "'"+attributeValue.toUpperCase()+"'";
-		    		}
-		    		
 		    		if(!attributeValue.isEmpty()){
-		    			query+=" AND bean."+attribute.getFieldName()+"="+attributeValue;
+			    		if(String.class.getCanonicalName().equals(ca.getDataType())){
+			    			attributeValue = "'"+URLDecoder.decode(attributeValue, "UTF-8")+"'";
+			    		}else if(Boolean.class.getCanonicalName().equals(ca.getDataType())){
+			    			attributeValue = "'"+attributeValue.toUpperCase()+"'";
+			    		}else if(Date.class.getCanonicalName().equals(ca.getDataType())){
+			    			SimpleDateFormat inputSDF = new SimpleDateFormat("dd.MM.yyyy.");
+			    			SimpleDateFormat outputSDF = new SimpleDateFormat("yyyy-MM-dd");
+			    			Date date = inputSDF.parse(attributeValue);
+			    			attributeValue = "'"+outputSDF.format(date)+"'";
+			    		}
+			    		query+=" AND bean."+attribute.getFieldName()+"="+attributeValue;
 		    		}
 		    	}else if(attribute instanceof JoinColumnAttribute){
 		    		String attributeValue = standardReportDataValues.get(attribute.getName());
@@ -191,6 +197,8 @@ public class OperationPrintResource extends BaseResource {
 		em.getTransaction().begin();
 		Query q = em.createQuery(query);
 		List<Object> results = q.getResultList();
+		AppCache.displayTextOnMainFrame("Operation print query: "+query, 0);
+		AppCache.displayTextOnMainFrame("Operation print result: "+results.size(), 0);
 		
 		TableModel model = new TableModel(panel.getEntityBean());
 		

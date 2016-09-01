@@ -369,7 +369,6 @@ public class PanelReader {
 						String dataFilter = elemOperation.getAttribute("data-filter");
 						
 						if(dataFilter!=null && !dataFilter.isEmpty()){
-							dataFilter = dataFilter.replaceAll("&#10;", ""); //replace new lines
 							String[] parameterList;
 							if(dataFilter.contains(",")){
 								parameterList = dataFilter.split(",");
@@ -384,7 +383,7 @@ public class PanelReader {
 									String parameterType = parameter[1].trim();
 									for(int spt=0; spt<ReportParamType.values().length; spt++){
 										if(ReportParamType.values()[spt].toString().equals(parameterType)){
-											if(ReportParamType.FORM_INPUT.toString().equals(parameterType)){
+											if(ReportParamType.FORM_INPUT.toString().equals(parameterType) && parameterName.length()>4){
 												parameterName = parameterName.substring(4);
 											}
 											oper.getDataFilter().put(parameterName, parameterType);

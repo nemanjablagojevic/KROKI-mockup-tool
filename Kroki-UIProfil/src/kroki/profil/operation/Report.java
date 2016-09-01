@@ -1,5 +1,10 @@
 package kroki.profil.operation;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import kroki.profil.ComponentType;
 
 /**
@@ -17,7 +22,9 @@ public class Report extends BussinessOperation {
     private String dataFilter;
     /**A way of sorting report data*/
     private String sortBy;
-
+    private Set<String> standardParameters = new HashSet<String>();
+    private Map<String, String> additionalParameters = new HashMap<String,String>();
+    
     public Report(String label) {
         super(label, true, ComponentType.BUTTON);
     }
@@ -56,4 +63,21 @@ public class Report extends BussinessOperation {
     public void setSortBy(String sortBy) {
         this.sortBy = sortBy;
     }
+
+	public Set<String> getStandardParameters() {
+		return standardParameters;
+	}
+
+	public void setStandardParameters(Set<String> standardParameters) {
+		this.standardParameters = standardParameters;
+	}
+
+	public Map<String, String> getAdditionalParameters() {
+		return additionalParameters;
+	}
+
+	public void setAdditionalParameters(Map<String, String> additionalParameters) {
+		this.additionalParameters = additionalParameters;
+	}
+
 }

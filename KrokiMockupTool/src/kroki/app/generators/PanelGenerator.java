@@ -339,9 +339,20 @@ public class PanelGenerator {
 										reportNameAttr.setValue(report.getReportName());
 										opTag.setAttributeNode(reportNameAttr);
 									}
-									if(report.getDataFilter()!=null){
+									String parameterData = "";
+									for(String param: report.getStandardParameters()){
+										parameterData+=param+":FormInput,";
+									}
+									for(String paramName: report.getAdditionalParameters().keySet()){
+										parameterData+=paramName+":"+report.getAdditionalParameters().get(paramName)+",";
+									}
+									if(parameterData.contains(",")){
+										parameterData = parameterData.substring(0,parameterData.length()-1);
+									}
+									
+									if(!parameterData.isEmpty()){
 										Attr dataFilterAttr = doc.createAttribute("data-filter");
-										dataFilterAttr.setValue(report.getDataFilter());
+										dataFilterAttr.setValue(parameterData);
 										opTag.setAttributeNode(dataFilterAttr);
 									}
 								}
