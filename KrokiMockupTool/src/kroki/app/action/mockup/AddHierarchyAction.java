@@ -2,8 +2,10 @@ package kroki.app.action.mockup;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
+
 import kroki.app.KrokiMockupToolApp;
 import kroki.app.controller.TabbedPaneController;
 import kroki.app.state.AddState;
@@ -13,6 +15,9 @@ import kroki.app.utils.ImageResource;
 import kroki.app.utils.StringResource;
 import kroki.app.view.Canvas;
 import kroki.profil.association.Hierarchy;
+import kroki.profil.panel.container.ManyToMany;
+import kroki.profil.utils.HierarchyUtil;
+import kroki.profil.utils.ManyToManyUtil;
 
 /**
  *
@@ -39,8 +44,18 @@ public class AddHierarchyAction extends AbstractAction {
         tabbedPaneController.getContext().goNext(State.ADD_STATE);
 
         Hierarchy hierarchy = new Hierarchy();
-        hierarchy.setActivationPanel(currentCanvas.getVisibleClass());
-        ((AddState) tabbedPaneController.getContext().getCurrentState()).setElement(hierarchy);
+        if(currentCanvas.getVisibleClass() instanceof ManyToMany){
+        	ManyToMany manyToMany = (ManyToMany) currentCanvas.getVisibleClass();
+        	int count = ManyToManyUtil.getHierarchyCount(manyToMany);
+        	if(count<=1){
+        		hierarchy.setActivationPanel(currentCanvas.getVisibleClass());
+        		((AddState) tabbedPaneController.getContext().getCurrentState()).setElement(hierarchy);
+        	}
+        }else{
+        	hierarchy.setActivationPanel(currentCanvas.getVisibleClass());
+        	((AddState) tabbedPaneController.getContext().getCurrentState()).setElement(hierarchy);
+        }
+        
         ((AddState) tabbedPaneController.getContext().getCurrentState()).setAddEnabledIcon(addEnabledIcon);
         ((AddState) tabbedPaneController.getContext().getCurrentState()).setAddDisabledIcon(addDisabledIcon);
     }
