@@ -2,6 +2,7 @@ package kroki.app.gui.settings;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -29,6 +30,7 @@ import kroki.profil.association.Hierarchy;
 import kroki.profil.association.Next;
 import kroki.profil.association.VisibleAssociationEnd;
 import kroki.profil.association.Zoom;
+import kroki.profil.panel.ReportPanel;
 import kroki.profil.panel.StandardPanel;
 import kroki.profil.panel.VisibleClass;
 import kroki.profil.panel.container.ManyToMany;
@@ -477,6 +479,18 @@ public class VisibleAssociationEndSettings extends VisibleElementSettings {
 				if (visitor != null) {
 					visitor.visit(visibleElement);
 					objectList = visitor.getObjectList();
+					if(visibleElement instanceof Hierarchy){
+					List<Object> listToRemove = new ArrayList<Object>();
+						Hierarchy hierarchy = (Hierarchy) visibleElement;
+						if(hierarchy.getActivationPanel() instanceof ManyToMany){
+							for(Object o: objectList){
+								if(!(o instanceof StandardPanel) || o instanceof ReportPanel){
+									listToRemove.add(o);
+								}
+							}
+							objectList.removeAll(listToRemove);
+						}
+					}
 					Object selected = ListDialog.showDialog(objectList.toArray(), info);
 					if (selected != null) {
 						if (visibleElement instanceof Next){
