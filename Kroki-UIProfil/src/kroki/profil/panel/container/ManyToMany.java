@@ -15,7 +15,6 @@ public class ManyToMany extends ContainerPanel {
 	private static final long serialVersionUID = 1L;
 
 	private ElementsGroup propertiesPanel;
-	private ElementsGroup operationsPanel;
 
 	public ManyToMany() {
 		super();
@@ -36,20 +35,6 @@ public class ManyToMany extends ContainerPanel {
 	@Override
 	public String toString() {
 		return label;
-	}
-
-	
-
-
-	/*******************/
-	/*GETTERS AND SETTERS**/
-	/*******************/
-	public ElementsGroup getOperationsPanel() {
-		return operationsPanel;
-	}
-
-	public void setOperationsPanel(ElementsGroup operationsPanel) {
-		this.operationsPanel = operationsPanel;
 	}
 
 	public ElementsGroup getPropertiesPanel() {

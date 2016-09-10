@@ -46,18 +46,10 @@ public class ManyToManyUtil {
 		LayoutManager propertiesLayout = new FreeLayoutManager();
 		((Composite) panel.getPropertiesPanel().getComponent()).setLayoutManager(propertiesLayout);
 		((Composite) panel.getPropertiesPanel().getComponent()).setLocked(true);
-		panel.setOperationsPanel(new ElementsGroup("operations", ComponentType.PANEL));
-		panel.getOperationsPanel().setGroupLocation(GroupLocation.operationPanel);
-		panel.getOperationsPanel().setGroupOrientation(GroupOrientation.horizontal);
-		panel.getOperationsPanel().setGroupAlignment(GroupAlignment.left);
 		LayoutManager operationsLayout = new FlowLayoutManager();
 		operationsLayout.setAlign(LayoutManager.LEFT);
-		((Composite) panel.getOperationsPanel().getComponent()).setLayoutManager(operationsLayout);
-		((Composite) panel.getOperationsPanel().getComponent()).setLocked(true);
 		UIPropertyUtil.addVisibleElement(panel, panel.getPropertiesPanel());
-		UIPropertyUtil.addVisibleElement(panel, panel.getOperationsPanel());
 		root.addChild(panel.getPropertiesPanel().getComponent(), BorderLayoutManager.CENTER);
-		root.addChild(panel.getOperationsPanel().getComponent(), BorderLayoutManager.SOUTH);
 		panel.update();
 	}
 	

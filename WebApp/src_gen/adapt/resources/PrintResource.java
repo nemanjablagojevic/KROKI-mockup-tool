@@ -95,7 +95,7 @@ public class PrintResource extends BaseResource {
 				List<AbstractAttribute> attributes = panel.getEntityBean().getAttributes();
 				String[] allCols = new String[attributes.size()];
 				for(int i=0; i<attributes.size(); i++){
-					allCols[i]+=attributes.get(i).getName()+";";
+					allCols[i]=attributes.get(i).getName();
 				}
 				buildPDFTable(panel, allCols, dataParagraph);
 			}else{
