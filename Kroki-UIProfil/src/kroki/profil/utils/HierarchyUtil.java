@@ -210,7 +210,7 @@ public class HierarchyUtil {
 				viaAssociationEnd = ParentChildUtil.possibleAssociationEnds((ParentChild)panel, hierarchy);
 			}else if(hierarchy.umlClass() instanceof ManyToMany){
 				panel = (ManyToMany) hierarchy.umlClass();
-				viaAssociationEnd = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
+				viaAssociationEnd = HierarchyBasedFormUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
 			}
 			if (viaAssociationEnd != null && viaAssociationEnd.size() == 1)
 				hierarchy.setViaAssociationEnd(viaAssociationEnd.get(0));
@@ -234,7 +234,7 @@ public class HierarchyUtil {
 		if(panel instanceof ParentChild){
 			count = ParentChildUtil.getHierarchyCount((ParentChild)panel);
 		}else if(panel instanceof ManyToMany){
-			count = ManyToManyUtil.getHierarchyCount((ManyToMany)panel);
+			count = HierarchyBasedFormUtil.getHierarchyCount((ManyToMany)panel);
 		}
 		if (count == 0) {
 			hierarchy.setLevel(1);
@@ -244,7 +244,7 @@ public class HierarchyUtil {
 			if(panel instanceof ParentChild){
 				hierarchy.setHierarchyParent(ParentChildUtil.getHierarchyRoot((ParentChild)panel));
 			}else if(panel instanceof ManyToMany){
-				hierarchy.setHierarchyParent(ManyToManyUtil.getHierarchyRoot((ManyToMany)panel));
+				hierarchy.setHierarchyParent(HierarchyBasedFormUtil.getHierarchyRoot((ManyToMany)panel));
 			}
 		} else {
 			//if the panel has two or more element

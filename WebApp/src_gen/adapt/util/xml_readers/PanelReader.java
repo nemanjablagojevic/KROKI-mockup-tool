@@ -296,7 +296,6 @@ public class PanelReader {
 		Document document = XMLParserUtils.parseXml(panelsDirectoryPath + panelsFileName);
 		NodeList nodeList = document.getElementsByTagName(Tags.MANY_TO_MANY);
 		AppCache.displayTextOnMainFrame("PanelReader.getJSONManyToManyPanelList: mtmPanelName: "+mtmPanelName, 0);
-		AppCache.displayTextOnMainFrame("PanelReader.getJSONManyToManyPanelList: nodeListLangth: "+nodeList.getLength(), 0);
 		
 		for(int i=0;i <nodeList.getLength(); i++) {
 			Element elem = (Element) nodeList.item(i);
@@ -307,11 +306,7 @@ public class PanelReader {
 					Element subElem = (Element) childPanelNodes.item(j);
 					String panelRef = subElem.getAttribute(Tags.PANEL_REF);
 					String asocEnd = subElem.getAttribute(Tags.ASSOCIATION_END);
-					/*
-					 * FORMAT:
-					 * 	"activate"          : "${panel.name}"<#if (panel.associationEnd??)>,
-            			"assoiciation_end"  : "${panel.associationEnd}"</#if>
-					 */
+					
 					String jsonEntry = "\"activate\":	\"" + panelRef + "\"";
 					if(asocEnd != null && !asocEnd.equals("")) {
 						jsonEntry += ", \"assoiciation_end\":	\"" + asocEnd + "\"";

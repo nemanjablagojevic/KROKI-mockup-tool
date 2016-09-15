@@ -22,7 +22,7 @@ import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.subsystem.BussinesSubsystem;
-import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.VisibleClassUtil;
 
@@ -219,7 +219,7 @@ public class UMLDescriptionGenerator {
 				}
 			}else if(element instanceof ManyToMany){
 				ManyToMany mtm = (ManyToMany) element;
-				for (Hierarchy h : ManyToManyUtil.allContainedHierarchies(mtm)) {
+				for (Hierarchy h : HierarchyBasedFormUtil.allContainedHierarchies(mtm)) {
 					String hName = namer.toCamelCase(h.getTargetPanel().getComponent().getName(), false);
 					connections += "\n" + elName + " \"1\" -- \"1\" " + hName + ":<<hierarchy>> {level =" + h.getLevel() +"}"; 
 				}
@@ -319,7 +319,7 @@ public class UMLDescriptionGenerator {
 				//if all child panels are in the same package, place parent panel in that package,
 				//else, place it in separate package called 'many-to-many panels'
 				boolean samePackage = true;
-				for (Hierarchy hier : ManyToManyUtil.allContainedHierarchies(mtm)) {
+				for (Hierarchy hier : HierarchyBasedFormUtil.allContainedHierarchies(mtm)) {
 					String targetPanel = namer.toCamelCase(hier.getTargetPanel().getComponent().getName(), false);
 					EJBClass panelClazz = getClassByName(targetPanel, exporter.getClasses());
 					if(!panelClazz.getSubsystem().equalsIgnoreCase(packageName)) {

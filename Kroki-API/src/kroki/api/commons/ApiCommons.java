@@ -18,8 +18,8 @@ import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.utils.ElementsGroupUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 import kroki.profil.utils.HierarchyUtil;
-import kroki.profil.utils.ManyToManyUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.UIPropertyUtil;
 
@@ -138,11 +138,11 @@ public class ApiCommons {
 						hierarchy.setViaAssociationEnd(possibleEnds.get(0));
 				}
 			}else if(hierarchy.umlClass() instanceof ManyToMany){
-				List<Hierarchy> possibleParents = ManyToManyUtil.possibleParents((ManyToMany)visibleClass, hierarchy, hierarchy.getLevel() - 1);
+				List<Hierarchy> possibleParents = HierarchyBasedFormUtil.possibleParents((ManyToMany)visibleClass, hierarchy, hierarchy.getLevel() - 1);
 				if (possibleParents != null  && possibleParents.size() >= 1){ 
 					hierarchy.setHierarchyParent(possibleParents.get(0)); //set the first one by default, users can change it in mockup editor
 					hierarchy.setLevel(possibleParents.get(0).getLevel() + 1);
-					List<VisibleAssociationEnd> possibleEnds = ManyToManyUtil.possibleAssociationEnds((ManyToMany)visibleClass, hierarchy);
+					List<VisibleAssociationEnd> possibleEnds = HierarchyBasedFormUtil.possibleAssociationEnds((ManyToMany)visibleClass, hierarchy);
 					if (possibleEnds != null  && possibleEnds.size() >= 1)
 						hierarchy.setViaAssociationEnd(possibleEnds.get(0));
 				}

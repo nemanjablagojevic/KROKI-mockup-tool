@@ -42,16 +42,7 @@ public class ManyToManyInfoResource extends BaseResource {
 			addToDataModel("zoomValues", zoomValues);
 			
 			addToDataModel("zoomId", zoomId);
-			
-//			if(!zoomValues.isEmpty() && zoomId!=null){
-//				AdaptStandardPanel zoomPanel = (AdaptStandardPanel) PanelReader.loadPanel(zoomValues.get(0), PanelType.STANDARDPANEL, null, OpenedAs.DEFAULT);
-//				EntityManager em = PersisenceHelper.createEntityManager();
-//				em.getTransaction().begin();
-//				String q = "FROM " + zoomPanel.getEntityBean().getName() + " x WHERE x.id=:did";
-//				Object o = em.createQuery(q).setParameter("did", zoomId).getSingleResult();
-//				addToDataModel("zoomId", zoomId);
-//			}
-			
+
 			addToDataModel("panelName", "\""+panelName+"\"");
 		}
 		super.handleGet();

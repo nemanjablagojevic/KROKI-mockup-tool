@@ -26,7 +26,7 @@ import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.panel.mode.ViewMode;
 import kroki.profil.panel.std.StdPanelSettings;
-import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.VisibleClassUtil;
 import kroki.uml_core_basic.UmlParameter;
@@ -460,8 +460,8 @@ public class PanelGenerator {
 					
 					//for every panelin the hierarchy put  <panel> tag
 					//<panel id="dnmp_sk" level="4" panel-ref="sektor_st" />
-					for(int m=0; m < ManyToManyUtil.allContainedHierarchies(mtmPanel).size(); m++) {
-						Hierarchy h = ManyToManyUtil.allContainedHierarchies(mtmPanel).get(m);
+					for(int m=0; m < HierarchyBasedFormUtil.allContainedHierarchies(mtmPanel).size(); m++) {
+						Hierarchy h = HierarchyBasedFormUtil.allContainedHierarchies(mtmPanel).get(m);
 						StandardPanel hPanel = (StandardPanel) h.getTargetPanel();
 						System.out.println("Hierarhija: id = " + h.name() + ", panel-ref = " + hPanel.getPersistentClass().name().toLowerCase() + "_st, level = " + h.getLevel());
 						
@@ -500,7 +500,7 @@ public class PanelGenerator {
 						mtmTag.appendChild(hPanelTag);
 						
 					}
-					Zoom zoom = ManyToManyUtil.getZoom(mtmPanel);
+					Zoom zoom = HierarchyBasedFormUtil.getZoom(mtmPanel);
 					if(zoom != null){
 						Element zoomTag = doc.createElement("zoom");
 						

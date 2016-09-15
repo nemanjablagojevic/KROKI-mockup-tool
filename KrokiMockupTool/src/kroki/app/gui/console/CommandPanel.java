@@ -68,7 +68,7 @@ import kroki.profil.panel.mode.ViewMode;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.subsystem.BussinesSubsystem;
 import kroki.profil.utils.ElementsGroupUtil;
-import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.StandardPanelUtil;
 import kroki.profil.utils.UIPropertyUtil;
@@ -1792,7 +1792,7 @@ public class CommandPanel extends JPanel {
 	
 	public VisibleClass makeManyToManyPanel(BussinesSubsystem owner, String label, String[] componets){
 		VisibleClass panel = new ParentChild();
-		ManyToManyUtil.defaultGuiSettings((ManyToMany) panel);
+		HierarchyBasedFormUtil.defaultGuiSettings((ManyToMany) panel);
 		//NamingUtil cc = new NamingUtil();
 		panel.setLabel(label);
 		panel.getComponent().setName(label);		

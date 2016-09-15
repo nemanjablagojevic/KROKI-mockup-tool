@@ -42,7 +42,7 @@ import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.utils.ElementsGroupUtil;
-import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.StandardPanelUtil;
 import kroki.profil.utils.UIPropertyUtil;
@@ -151,7 +151,7 @@ public class UIClassElement extends ClassElement{
 		}
 		else if (stereotype.equals(ClassStereotypeUI.MANY_TO_MANY.toString())){
 			umlClass = new ManyToMany();
-			ManyToManyUtil.defaultGuiSettings((ManyToMany)umlClass);
+			HierarchyBasedFormUtil.defaultGuiSettings((ManyToMany)umlClass);
 		}
 		
 		visibleClass = (VisibleClass)umlClass;

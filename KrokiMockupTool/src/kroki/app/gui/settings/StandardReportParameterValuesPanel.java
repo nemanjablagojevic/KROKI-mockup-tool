@@ -27,7 +27,7 @@ import kroki.profil.operation.Report;
 
 /**
  * Simple GUI component that contains editable list which enables combo box values management in KROKI Mockup tool
- * @author Milorad Filipovic
+ * @author Nemanja Blagojevic
  */
 public class StandardReportParameterValuesPanel extends JPanel {
 

@@ -39,7 +39,7 @@ import kroki.profil.panel.mode.OperationMode;
 import kroki.profil.panel.mode.ViewMode;
 import kroki.profil.property.VisibleProperty;
 import kroki.profil.utils.HierarchyUtil;
-import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.VisibleClassUtil;
 import net.miginfocom.swing.MigLayout;
@@ -527,9 +527,9 @@ public class VisibleAssociationEndSettings extends VisibleElementSettings {
 											h.setViaAssociationEnd(ends.get(0));
 									}
 								} if(panel instanceof ManyToMany){
-									ManyToManyUtil.updateTargetPanel((ManyToMany)panel, h, (VisibleClass) selected);
+									HierarchyBasedFormUtil.updateTargetPanel((ManyToMany)panel, h, (VisibleClass) selected);
 									if (h.getLevel() == 2 && h.getViaAssociationEnd() == null){
-										List<VisibleAssociationEnd> ends = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, h);
+										List<VisibleAssociationEnd> ends = HierarchyBasedFormUtil.possibleAssociationEnds((ManyToMany)panel, h);
 										if (ends.size() == 1)
 											h.setViaAssociationEnd(ends.get(0));
 									}

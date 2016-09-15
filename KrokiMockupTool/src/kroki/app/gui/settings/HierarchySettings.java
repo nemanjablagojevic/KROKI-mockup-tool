@@ -28,7 +28,7 @@ import kroki.profil.panel.VisibleClass;
 import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.utils.HierarchyUtil;
-import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.uml_core_basic.UmlClass;
 import kroki.uml_core_basic.UmlProperty;
@@ -147,7 +147,7 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 				if(panel instanceof ParentChild){
 					possibleLevels = ParentChildUtil.possibleLevels((ParentChild)panel, hierarchy);
 				}else if (panel instanceof ManyToMany){
-					possibleLevels = ManyToManyUtil.possibleLevels((ManyToMany)panel, hierarchy);
+					possibleLevels = HierarchyBasedFormUtil.possibleLevels((ManyToMany)panel, hierarchy);
 				}
 				if (possibleLevels != null && possibleLevels.size() > 0){
 					levelTf.setVisible(false);
@@ -187,7 +187,7 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 		if(panel instanceof ParentChild){
 			viaAssociationEnd = ParentChildUtil.possibleAssociationEnds((ParentChild)panel, hierarchy);
 		}else if(hierarchy.getTargetPanel() instanceof ManyToMany){
-			viaAssociationEnd = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
+			viaAssociationEnd = HierarchyBasedFormUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
 		}
 
 		String viaAssociationEndValue = "";
@@ -307,11 +307,11 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 								viaAssociationEndBtn.setEnabled(false);
 						}
 					} else if(panel instanceof ManyToMany){
-						List<Hierarchy> possibleParents = ManyToManyUtil.possibleParents((ManyToMany)panel, hierarchy, level - 1);
+						List<Hierarchy> possibleParents = HierarchyBasedFormUtil.possibleParents((ManyToMany)panel, hierarchy, level - 1);
 						if (possibleParents != null && possibleParents.size() == 1){
 							HierarchyUtil.updateParent(hierarchy, possibleParents.get(0));
 							hierarchyParentTf.setText(possibleParents.get(0).toString());
-							List<VisibleAssociationEnd> viaAssociationEnd = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
+							List<VisibleAssociationEnd> viaAssociationEnd = HierarchyBasedFormUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
 							if (hierarchy.getViaAssociationEnd() != null)
 								viaAssociationEndTf.setText(hierarchy.getViaAssociationEnd().toString());
 	
@@ -349,9 +349,9 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 						hierarcyList = ParentChildUtil.possibleParents((ParentChild)panel, hierarchy, hierarchy.getLevel() - 1);
 				}else if(panel instanceof ManyToMany){
 					if (hierarchy.getLevel() == -1)
-						hierarcyList = ManyToManyUtil.possibleParents((ManyToMany)panel, hierarchy, -1);
+						hierarcyList = HierarchyBasedFormUtil.possibleParents((ManyToMany)panel, hierarchy, -1);
 					else
-						hierarcyList = ManyToManyUtil.possibleParents((ManyToMany)panel, hierarchy, hierarchy.getLevel() - 1);
+						hierarcyList = HierarchyBasedFormUtil.possibleParents((ManyToMany)panel, hierarchy, hierarchy.getLevel() - 1);
 				}
 				
 				if (hierarcyList == null){
@@ -378,7 +378,7 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 				if(panel instanceof ParentChild){
 					viaAssociationEndList = ParentChildUtil.possibleAssociationEnds((ParentChild)panel, hierarchy);
 				}else if(panel instanceof ManyToMany){
-					viaAssociationEndList = ManyToManyUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
+					viaAssociationEndList = HierarchyBasedFormUtil.possibleAssociationEnds((ManyToMany)panel, hierarchy);
 				}
 				
 				VisibleAssociationEnd viaAssociationEnd = (VisibleAssociationEnd) ListDialog.showDialog(viaAssociationEndList.toArray(), "Choose via association end:");
@@ -401,7 +401,7 @@ public class HierarchySettings extends VisibleAssociationEndSettings {
 					if(panel instanceof ParentChild){
 						targetPanelList = ParentChildUtil.getPossibleAppliedToPanels((ParentChild) panel,  (ParentChild)hierarchy.getTargetPanel());
 					} if(panel instanceof ManyToMany){
-						targetPanelList = ManyToManyUtil.getPossibleAppliedToPanels((ManyToMany) panel,  (ManyToMany)hierarchy.getTargetPanel());
+						targetPanelList = HierarchyBasedFormUtil.getPossibleAppliedToPanels((ManyToMany) panel,  (ManyToMany)hierarchy.getTargetPanel());
 					}
 				}
 				VisibleClass targetPanel = (VisibleClass) ListDialog.showDialog(targetPanelList.toArray(), "Choose applied to panel");

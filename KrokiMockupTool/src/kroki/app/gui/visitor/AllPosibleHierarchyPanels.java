@@ -8,7 +8,7 @@ import kroki.profil.panel.VisibleClass;
 import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.subsystem.BussinesSubsystem;
-import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.VisibleClassUtil;
 import kroki.uml_core_basic.UmlClass;
@@ -79,7 +79,7 @@ public class AllPosibleHierarchyPanels extends Visitor {
 			Hierarchy hierarchy = (Hierarchy)object;
 			if (hierarchy.getLevel() > 1 || hierarchy.getLevel() == -1){
 				objectList.clear();
-				objectList.addAll(ManyToManyUtil.getAllPosibleTargetPanels(manyToMany));
+				objectList.addAll(HierarchyBasedFormUtil.getAllPosibleTargetPanels(manyToMany));
 			}
 			else{
 				objectList.remove(manyToMany);

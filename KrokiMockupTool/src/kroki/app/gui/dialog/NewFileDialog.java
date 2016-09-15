@@ -26,7 +26,7 @@ import kroki.profil.panel.VisibleClass;
 import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.panel.container.ParentChild;
 import kroki.profil.subsystem.BussinesSubsystem;
-import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 import kroki.profil.utils.ParentChildUtil;
 import kroki.profil.utils.ReportPanelUtil;
 import kroki.profil.utils.StandardPanelUtil;
@@ -166,7 +166,7 @@ public class NewFileDialog extends JDialog {
                 ParentChildUtil.defaultGuiSettings((ParentChild)visibleClass);
             } else if (fileTypeCb.getSelectedItem() == FileType.MANY_TO_MANY_PANEL) {
                 visibleClass = new ManyToMany();
-                ManyToManyUtil.defaultGuiSettings((ManyToMany)visibleClass);
+                HierarchyBasedFormUtil.defaultGuiSettings((ManyToMany)visibleClass);
             } else if (fileTypeCb.getSelectedItem() == FileType.REPORT_PANEL){
             	visibleClass = new ReportPanel();
                 ReportPanelUtil.defaultGuiSettings((ReportPanel)visibleClass);

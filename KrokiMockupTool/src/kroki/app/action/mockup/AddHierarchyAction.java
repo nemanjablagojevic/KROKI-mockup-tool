@@ -17,7 +17,7 @@ import kroki.app.view.Canvas;
 import kroki.profil.association.Hierarchy;
 import kroki.profil.panel.container.ManyToMany;
 import kroki.profil.utils.HierarchyUtil;
-import kroki.profil.utils.ManyToManyUtil;
+import kroki.profil.utils.HierarchyBasedFormUtil;
 
 /**
  *
@@ -46,7 +46,7 @@ public class AddHierarchyAction extends AbstractAction {
         Hierarchy hierarchy = new Hierarchy();
         if(currentCanvas.getVisibleClass() instanceof ManyToMany){
         	ManyToMany manyToMany = (ManyToMany) currentCanvas.getVisibleClass();
-        	int count = ManyToManyUtil.getHierarchyCount(manyToMany);
+        	int count = HierarchyBasedFormUtil.getHierarchyCount(manyToMany);
         	if(count<=1){
         		hierarchy.setActivationPanel(currentCanvas.getVisibleClass());
         		((AddState) tabbedPaneController.getContext().getCurrentState()).setElement(hierarchy);
