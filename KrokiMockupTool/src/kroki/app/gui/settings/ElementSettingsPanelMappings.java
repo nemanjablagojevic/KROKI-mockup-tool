@@ -34,9 +34,9 @@ public class ElementSettingsPanelMappings {
 		settingsMap.put(ManyToMany.class, VisibleClassSettings.class);
 		settingsMap.put(VisibleClass.class, VisibleClassSettings.class);
 		settingsMap.put(StandardPanel.class, StandardPanelSettings.class);
+		settingsMap.put(ReportPanel.class, ReportPanelSettings.class);
 		settingsMap.put(Transaction.class, TransactionSettings.class);
 		settingsMap.put(Report.class, ReportSettings.class);
-		settingsMap.put(ReportPanel.class, StandardPanelSettings.class);
 		settingsMap.put(BussinessOperation.class, BussinessOperationSettings.class);
 		settingsMap.put(ElementsGroup.class, ElementsGroupSettings.class);
 		settingsMap.put(Zoom.class, ZoomSettings.class);

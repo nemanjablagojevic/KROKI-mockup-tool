@@ -65,16 +65,11 @@ public class ReportPanelUtil {
        ((Composite) panel.getOperationsPanel().getComponent()).setLayoutManager(operationsLayout);
        ((Composite) panel.getOperationsPanel().getComponent()).setLocked(true);
 
-       panel.setAdd(false);
-       panel.setCopy(false);
-       panel.setDelete(false);
-       panel.setUpdate(false);
-       panel.setChangeMode(false);
-       
        TextField tfReportCode = new TextField();
        tfReportCode.setName("Report code");
        VisibleProperty tfRC = new VisibleProperty(tfReportCode.getName(), true, ComponentType.TEXT_FIELD);
        tfRC.setName("Report code");
+       tfRC.setColumnLabel("REPORT_CODE");
        tfRC.setLabel("Report code");
        tfRC.setUmlClass(panel);
        tfRC.setLabelToCode(true);
@@ -119,6 +114,12 @@ public class ReportPanelUtil {
 
        createMockupForStandardOperations(panel);
        initializeStandardToolbar(panel);
+       
+       panel.setAdd(false);
+       panel.setCopy(false);
+       panel.setDelete(false);
+       panel.setUpdate(false);
+       panel.setChangeMode(false);
 
        root.addChild(panel.getToolbarPanel().getComponent(), BorderLayoutManager.NORTH);
        root.addChild(panel.getPropertiesPanel().getComponent(), BorderLayoutManager.CENTER);
@@ -135,18 +136,22 @@ public class ReportPanelUtil {
    private static void createMockupForStandardOperations(ReportPanel panel) {
        panel.setAddButton(new Button());
        panel.getAddButton().setImage(new SerializableBufferedImage("plus"));
+       panel.getAddButton().setEnabled(false);
        panel.getAddButton().updateComponent();
 
        panel.setUpdateButton(new Button());
        panel.getUpdateButton().setImage(new SerializableBufferedImage("pencil"));
+       panel.getUpdateButton().setEnabled(false);
        panel.getUpdateButton().updateComponent();
 
        panel.setCopyButton(new Button());
        panel.getCopyButton().setImage(new SerializableBufferedImage("copy"));
+       panel.getCopyButton().setEnabled(false);
        panel.getCopyButton().updateComponent();
 
        panel.setDeleteButton(new Button());
        panel.getDeleteButton().setImage(new SerializableBufferedImage("minus"));
+       panel.getDeleteButton().setEnabled(false);
        panel.getDeleteButton().updateComponent();
 
        panel.setSearchButton(new Button());
